@@ -69,6 +69,7 @@ namespace ScheduledDiagnosticService
                 Diagnostic DIA = new Diagnostic(_algoritms, _section_id, _tablica, _dtStart, _dtStop, _seriya, _number, _section); //объект класса диагностики   
                 DIA.Notify += outToLog;
                 Report_Diagnostic_Models rezultDiagnostic = await DIA.GetDiagnosticAsync(); // rezultDiagnostic = await Task.Run(() => DIA.GetDiagnostic());
+                Result _result = await DIA.SaveResultDiagnosticAsync(rezultDiagnostic);
                 //выполнить диагностику и записать результат в переменную rezultDiagnostic
                 //if (rezultDiagnostic.ERR == false) //если объект результата диагностики без ошибок
                 //{

@@ -35,6 +35,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.logRichTextBox = new System.Windows.Forms.RichTextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -87,11 +88,22 @@
             this.label4.TabIndex = 6;
             this.label4.Text = "Логирование:";
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(169, 128);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 7;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(470, 292);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.logRichTextBox);
             this.Controls.Add(this.textBox1);
@@ -112,5 +124,6 @@
         private TextBox textBox1;
         private RichTextBox logRichTextBox;
         private Label label4;
+        private Button button2;
     }
 }

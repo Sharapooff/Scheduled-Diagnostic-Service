@@ -2,6 +2,10 @@ using Classes;
 using Models;
 using Nancy.Json;
 
+using ScheduledDiagnosticService.Context;
+using ScheduledDiagnosticService.Models.DataBase;
+using Microsoft.Extensions.Configuration;
+
 namespace ScheduledDiagnosticService
 {
     public partial class Form1 : Form
@@ -13,7 +17,7 @@ namespace ScheduledDiagnosticService
         bool StartService = false;
 
         private void button1_Click(object sender, EventArgs e)
-        {
+        {           
             if (!StartService)
             {
                 // запустить таймер
@@ -133,5 +137,38 @@ namespace ScheduledDiagnosticService
             });
         }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var builder = new ConfigurationBuilder();
+            // установка пути к текущему каталогу
+            builder.SetBasePath(Directory.GetCurrentDirectory());
+            // получаем конфигурацию из файла appsettings.json
+            builder.AddJsonFile("appsettings.json");
+            // создаем конфигурацию
+            var config = builder.Build();
+            // получаем строку подключения
+            string connectionString = config.GetConnectionString("DiagServiceConnection");
+            using (DiagServiceContext db = new DiagServiceContext(connectionString))
+            {
+                bool isCreated = db.Database.EnsureCreated();
+                if (isCreated) Console.WriteLine("База данных была создана");
+                else Console.WriteLine("База данных уже существует");
+
+
+                Section section1 = new Section { Notation = "2ТЭ25КМ" };
+                Section section2 = new Section { Notation = "3ТЭ25КМ" };
+                db.Sections.AddRange(section1, section2);
+                db.SaveChanges();
+                var sections = db.Sections.ToList();
+                logRichTextBox.AppendText("\r\n" + "Список объектов:");
+                foreach (Section s in sections)
+                {
+                    logRichTextBox.AppendText("\r\n" + $"{s.Id} - {s.Notation}");
+                }
+                //UserProfile profile1 = new UserProfile { Age = 22, Name = "Tom", User = user1 };
+                //UserProfile profile2 = new UserProfile { Age = 27, Name = "Alice", User = user2 };
+                //db.UserProfiles.AddRange(profile1, profile2);
+            }
+        }
     }
 }

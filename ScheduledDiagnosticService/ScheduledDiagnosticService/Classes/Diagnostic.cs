@@ -139,6 +139,13 @@ namespace Classes
             Report_Diagnostic_Models _reportModel = await Task.Run(() => GetDiagnostic());                // выполняется асинхронно
             return _reportModel;
         }
+        async public Task<Result> SaveResultDiagnosticAsync(Report_Diagnostic_Models ResultDiagnostic)//, DBCotext dbCotext)
+        {
+            Result _result = new Result { ERR = false, ERR_Message = ""};
+
+            return (_result);
+        }
+        
         //События _________________________________________________________________________________________
 
 

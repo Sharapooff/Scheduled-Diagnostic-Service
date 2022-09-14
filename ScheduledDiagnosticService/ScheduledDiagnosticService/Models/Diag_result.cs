@@ -14,4 +14,10 @@ namespace Models
                                                 //список объектов класса Т
         public List<T> Table = new List<T>();
     }
+
+    public class Result
+    {
+        public bool ERR { get; set; }
+        public string ERR_Message { get; set; } //серия
+    }
 }

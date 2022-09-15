@@ -65,7 +65,7 @@ namespace Classes
             try
             {
                 //создаем под каждый алгоритм свою задачу
-                Task<Diag_result<Tabels_Models.Tab_1_1>> task_1_1 = Algoritm_1_1_Async(); //new Task<Diag_result<Tabels_Models.Tab_1_1>>(Algoritm_1_1);
+                Task<Diag_result<Tabels_Models.Tab_1_1>> task_1_1 = new Task<Diag_result<Tabels_Models.Tab_1_1>>(Algoritm_1_1);
                 Task<Diag_result<Tabels_Models.Tab_1_2>> task_1_2 = new Task<Diag_result<Tabels_Models.Tab_1_2>>(Algoritm_1_2);
 
                 Task<List<Tabels_Models.GroupSmsModel>> task_2_0 = new Task<List<Tabels_Models.GroupSmsModel>>(Algoritm_2_0);//Alarms messages
@@ -150,7 +150,7 @@ namespace Classes
 
 
         //Алгоритмы диагностирования _________________________________________________________________________________________
-        public async Task<Diag_result<Tabels_Models.Tab_1_1>> Algoritm_1_1_Async()
+        public Diag_result<Tabels_Models.Tab_1_1> Algoritm_1_1()
         {
             Diag_result<Tabels_Models.Tab_1_1> t_1_1 = new Diag_result<Tabels_Models.Tab_1_1>();
             try
@@ -225,7 +225,7 @@ namespace Classes
                 }
                 SqlConnection CoNn = new SqlConnection();
                 CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
-                await CoNn.OpenAsync();
+                CoNn.OpenAsync();
                 SqlCommand cmd3 = CoNn.CreateCommand();
                 cmd3.CommandText = _SQL;
                 SqlDataReader reader3 = cmd3.ExecuteReader();

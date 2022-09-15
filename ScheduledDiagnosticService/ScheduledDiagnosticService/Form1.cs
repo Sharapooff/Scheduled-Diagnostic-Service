@@ -155,8 +155,8 @@ namespace ScheduledDiagnosticService
                 else Console.WriteLine("База данных уже существует");
 
 
-                Section section1 = new Section { Notation = "2ТЭ25КМ" };
-                Section section2 = new Section { Notation = "3ТЭ25КМ" };
+                Section section1 = new Section { Notation = "2ТЭ25КМ", RefID = 333 };
+                Section section2 = new Section { Notation = "3ТЭ25КМ", RefID = 334 };
                 db.Sections.AddRange(section1, section2);
                 db.SaveChanges();
                 var sections = db.Sections.ToList();

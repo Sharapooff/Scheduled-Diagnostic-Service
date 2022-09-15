@@ -19,6 +19,9 @@ namespace ScheduledDiagnosticService.Models.DataBase
         public string? Notation { get; set; }
         //-----------------------------------
 
+        public int? RefID { get; set; }
+        //-----------------------------------
+
         public virtual List<Incident> Incidents { get; set; } = new(); // навигационное свойство
         public virtual List<TimeTable> TimeTables { get; set; } = new(); // навигационное свойство
 

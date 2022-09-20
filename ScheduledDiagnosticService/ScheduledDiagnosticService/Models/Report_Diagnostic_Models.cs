@@ -26,6 +26,11 @@ namespace Models
         //динамические объекты
         public Diag_result<Tab_1_1> Table_1_1 = new Diag_result<Tab_1_1>();
         public Diag_result<Tab_1_2> Table_1_2 = new Diag_result<Tab_1_2>();
+        public Diag_result<Tab_1_3> Table_1_3 = new Diag_result<Tab_1_3>();
+        public Diag_result<Tab_1_4> Table_1_4 = new Diag_result<Tab_1_4>();
+        public Diag_result<Tab_1_5> Table_1_5 = new Diag_result<Tab_1_5>();
+        public Diag_result<Tab_1_6> Table_1_6 = new Diag_result<Tab_1_6>();
+        public Diag_result<Tab_1_7> Table_1_7 = new Diag_result<Tab_1_7>();
         public Diag_result<Tab_1_8> Table_1_8 = new Diag_result<Tab_1_8>();
 
         public Diag_result<Tab_2_1> Table_2_1 = new Diag_result<Tab_2_1>();

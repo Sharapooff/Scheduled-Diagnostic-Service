@@ -95,6 +95,189 @@ namespace Models
             }
 
         }
+        public class Tab_1_3
+        {
+            public string Date_Time { get; set; }            
+            public string sms { get; set; }
+            public string T_vod { get; set; }
+
+            public Tab_1_3()
+            { }
+
+            public Tab_1_3(string _Date_Time, string _sms, string _T_vod)
+            {
+                Date_Time = _Date_Time;
+                sms = _sms;
+                T_vod = _T_vod;
+            }
+        }
+        public class Tab_1_4
+        {
+            public string Date_Time { get; set; }
+            public string sms { get; set; }
+            public string meaning { get; set; }
+
+            public Tab_1_4()
+            { }
+
+            public Tab_1_4(string _Date_Time, string _sms, string _meaning)
+            {
+                Date_Time = _Date_Time;
+                sms = _sms;
+                meaning = _meaning;
+            }
+        }
+        public class Tab_1_5
+        {
+            public string Date_Time { get; set; }
+            public string sms { get; set; }
+
+            public Tab_1_5()
+            { }
+
+            public Tab_1_5(string _Date_Time, string _Sms)
+            {
+                Date_Time = _Date_Time;
+                sms = _Sms;
+            }
+        }
+        public class Tab_1_6
+        {
+            public List<Tab_1_6_1> Tab_1_6_1 { get; set; }
+            public List<Tab_1_6_2> Tab_1_6_2 { get; set; }
+            public List<Tab_1_6_3> Tab_1_6_3 { get; set; }
+            public List<Tab_1_6_4> Tab_1_6_4 { get; set; }
+            public Tab_1_6()
+            {
+                Tab_1_6_1 = new List<Tab_1_6_1>();
+                Tab_1_6_2 = new();
+                Tab_1_6_3 = new();
+                Tab_1_6_4 = new();
+            }
+
+            public Tab_1_6(List<Tab_1_6_1> _t_1_6_1, List<Tab_1_6_2> _t_1_6_2, List<Tab_1_6_3> _t_1_6_3, List<Tab_1_6_4> _t_1_6_4)
+            {
+                Tab_1_6_1 = _t_1_6_1;
+                Tab_1_6_2 = _t_1_6_2;
+                Tab_1_6_3 = _t_1_6_3;
+                Tab_1_6_4 = _t_1_6_4;
+            }
+        }
+        public class Tab_1_6_1
+        {
+            public string Date_Time { get; set; }
+            public string Pnadd { get; set; }
+            public string sms { get; set; }
+
+            public Tab_1_6_1()
+            { }
+
+            public Tab_1_6_1(string _Date_Time, string _Pnadd, string _sms)
+            {
+                Date_Time = _Date_Time;
+                Pnadd = _Pnadd;
+                sms = _sms;
+            }
+
+        }
+        public class Tab_1_6_2
+        {
+            public string Date_Time { get; set; }
+            public string PCM { get; set; }
+            public string TLC { get; set; }
+            public string sms { get; set; }
+
+            public Tab_1_6_2()
+            { }
+
+            public Tab_1_6_2(string _Date_Time, string _PCM, string _TLC, string _sms)
+            {
+                Date_Time = _Date_Time;
+                PCM = _PCM;
+                TLC = _TLC;
+                sms = _sms;
+            }
+
+        }
+        public class Tab_1_6_3
+        {
+            public string Date_Time { get; set; }
+            public string PCM { get; set; }
+            public string TLC { get; set; }
+            public string sms { get; set; }
+
+            public Tab_1_6_3()
+            { }
+
+            public Tab_1_6_3(string _Date_Time, string _PCM, string _TLC, string _sms)
+            {
+                Date_Time = _Date_Time;
+                PCM = _PCM;
+                TLC = _TLC;
+                sms = _sms;
+            }
+
+        }
+        public class Tab_1_6_4
+        {
+            public string Date_Time { get; set; }
+            public string sms { get; set; }
+
+            public Tab_1_6_4()
+            { }
+
+            public Tab_1_6_4(string _Date_Time, string _sms)
+            {
+                Date_Time = _Date_Time;
+                sms = _sms;
+            }
+
+        }
+
+        public class Tab_1_7
+        {
+            public string Date_Time { get; set; }
+            public string Temp { get; set; }
+            public string K { get; set; }
+            // public string E { get; set; }
+            public string C { get; set; }
+            public string C_ab { get; set; }
+
+            public Tab_1_7()
+            { }
+
+            public Tab_1_7(string _Date_Time, string _Temp, string _K, string _C, string _C_ab)
+            {
+                Date_Time = _Date_Time;
+                Temp = _Temp;
+                K = _K;
+                C = _C;
+                C_ab = _C_ab;
+                //E_proc = _E_proc;
+            }
+        }
+        public class Tab_1_8
+        {
+            public string Date_Time { get; set; }
+            public string Temp { get; set; }
+            public string K { get; set; }
+            // public string E { get; set; }
+            public string C { get; set; }
+            public string C_ab { get; set; }
+
+            public Tab_1_8()
+            { }
+
+            public Tab_1_8(string _Date_Time, string _Temp, string _K, string _C, string _C_ab)
+            {
+                Date_Time = _Date_Time;
+                Temp = _Temp;
+                K = _K;
+                C = _C;
+                C_ab = _C_ab;
+                //E_proc = _E_proc;
+            }
+        }
 
         public class Tab_2_1
         {
@@ -443,30 +626,7 @@ namespace Models
                 Temp = _Temp;
             }
         }
-        // for vnikti@vnikti.com
-
-        public class Tab_1_8
-        {
-            public string Date_Time { get; set; }
-            public string Temp { get; set; }
-            public string K { get; set; }
-            // public string E { get; set; }
-            public string C { get; set; }
-            public string C_ab { get; set; }
-
-            public Tab_1_8()
-            { }
-
-            public Tab_1_8(string _Date_Time, string _Temp, string _K, string _C, string _C_ab)
-            {
-                Date_Time = _Date_Time;
-                Temp = _Temp;
-                K = _K;
-                C = _C;
-                C_ab = _C_ab;
-                //E_proc = _E_proc;
-            }
-        }
+                
         public class GroupSmsModel //модель для сгруппированных тревожных сообщений с датами их регистрации
         {
             public string Message { get; set; } //текст сообщения

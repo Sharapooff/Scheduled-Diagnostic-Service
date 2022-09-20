@@ -16,6 +16,7 @@ namespace Classes
     {
         //поля
         public event DiagnosticHandler? Notify;              // 1.Определение события (уведомление)
+        public string _connectionString { get; set; }
         public string Algoritm_id { get; set; }
         public string _section_id { get; set; }
         public string _tablica { get; set; }
@@ -30,20 +31,33 @@ namespace Classes
         public Diagnostic()
         { }
         //конструктор с параметрами 
-        public Diagnostic(string Algorinm_id, string Section_id, string Tablica, string Start_Date, string End_Date, string Seriya, string Number, string Section)
+        /// <summary>
+        /// Конструктор с параментрами
+        /// </summary>
+        /// <param name="ConnectionString">Строка подключения к БД с параметрами работы локомотивов</param>
+        /// <param name="Section_id">Id секции</param>
+        /// <param name="Algorinm_id">Строка с обозначением алгоритмов в формате *1-1*6-1*</param>
+        /// <param name="Start_Date">Начальная дата диагностиравания</param>
+        /// <param name="End_Date">Конечная дата диагностирования</param>
+        public Diagnostic(string ConnectionString, string Section_id, string Algorinm_id, string Start_Date, string End_Date)
         {
-            this.Algoritm_id = Algorinm_id;
+            this ._connectionString = ConnectionString;
             this._section_id = Section_id;
-            this._tablica = Tablica;
+            this.Algoritm_id = Algorinm_id;            
+            this._tablica = "";
             this.dat_ot = Start_Date;
             this.dat_do = End_Date;
-            this.Seriya = Seriya;
-            this.Number = Number;
-            this.Section = Section;
+            this.Seriya = "";
+            this.Number = "";
+            this.Section = "";
             this.Report_PDF_file_path = "";
-
         }
+
         //методы
+        /// <summary>
+        /// Метод, реализующий методы диагностики
+        /// </summary>
+        /// <returns>Report_Diagnostic_Models</returns>
         public Report_Diagnostic_Models GetDiagnostic()
         {
             Report_Diagnostic_Models _reportModel = new Report_Diagnostic_Models();
@@ -57,6 +71,8 @@ namespace Classes
             _reportModel.Tipe = this._tablica;
             _reportModel.ERR = false;
             _reportModel.ERR_message = "";
+                       
+
             /*
              * здесь вызываем все выбранные методы диагностирования
              * и заполняем модель отчета сразу или после окончания 
@@ -64,9 +80,30 @@ namespace Classes
             */
             try
             {
+                //загружаем  дополнительную информацию по id секции            
+                using (SqlConnection CoNn = new SqlConnection(_connectionString))
+                {
+                    CoNn.Open();
+                    SqlCommand cmd = CoNn.CreateCommand();
+                    cmd.CommandText = "EXEC[App].[SectionInfo] " + _section_id;
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        this._tablica = reader["Conf_name"].ToString();//reader.GetString(1);
+                        this.Seriya = reader["Model"].ToString();
+                        this.Number = reader["Loc_number"].ToString();
+                        this.Section = reader["Sec"].ToString();
+                    }
+                }
                 //создаем под каждый алгоритм свою задачу
                 Task<Diag_result<Tabels_Models.Tab_1_1>> task_1_1 = new Task<Diag_result<Tabels_Models.Tab_1_1>>(Algoritm_1_1);
                 Task<Diag_result<Tabels_Models.Tab_1_2>> task_1_2 = new Task<Diag_result<Tabels_Models.Tab_1_2>>(Algoritm_1_2);
+                Task<Diag_result<Tabels_Models.Tab_1_3>> task_1_3 = new Task<Diag_result<Tabels_Models.Tab_1_3>>(Algoritm_1_3);
+                Task<Diag_result<Tabels_Models.Tab_1_4>> task_1_4 = new Task<Diag_result<Tabels_Models.Tab_1_4>>(Algoritm_1_4);
+                Task<Diag_result<Tabels_Models.Tab_1_5>> task_1_5 = new Task<Diag_result<Tabels_Models.Tab_1_5>>(Algoritm_1_5);
+                Task<Diag_result<Tabels_Models.Tab_1_6>> task_1_6 = new Task<Diag_result<Tabels_Models.Tab_1_6>>(Algoritm_1_6);
+                Task<Diag_result<Tabels_Models.Tab_1_7>> task_1_7 = new Task<Diag_result<Tabels_Models.Tab_1_7>>(Algoritm_1_7);
+                Task<Diag_result<Tabels_Models.Tab_1_8>> task_1_8 = new Task<Diag_result<Tabels_Models.Tab_1_8>>(Algoritm_1_8);
 
                 Task<List<Tabels_Models.GroupSmsModel>> task_2_0 = new Task<List<Tabels_Models.GroupSmsModel>>(Algoritm_2_0);//Alarms messages
                 Task<Diag_result<Tabels_Models.Tab_2_1>> task_2_1 = new Task<Diag_result<Tabels_Models.Tab_2_1>>(Algoritm_2_1);
@@ -87,6 +124,12 @@ namespace Classes
                 //запускаем потоки только выбранных алгоритмов. Если алгоритм предполагает возвращение 2 таблиц, то дочернюю запускаем отдельным процессом, для которого создаем отдельный метод
                 if (Algoritm_id.IndexOf("*1-1*") > -1) { task_1_1.Start(); };
                 if (Algoritm_id.IndexOf("*1-2*") > -1) { task_1_2.Start(); };
+                if (Algoritm_id.IndexOf("*1-3*") > -1) { task_1_3.Start(); };
+                if (Algoritm_id.IndexOf("*1-4*") > -1) { task_1_4.Start(); };
+                if (Algoritm_id.IndexOf("*1-5*") > -1) { task_1_5.Start(); };
+                if (Algoritm_id.IndexOf("*1-6*") > -1) { task_1_6.Start(); };
+                if (Algoritm_id.IndexOf("*1-7*") > -1) { task_1_7.Start(); };
+                if (Algoritm_id.IndexOf("*1-8*") > -1) { task_1_8.Start(); };
 
                 if (Algoritm_id.IndexOf("*2-0*") > -1) { task_2_0.Start(); };//Alarms messages
                 if (Algoritm_id.IndexOf("*2-1*") > -1) { task_2_1.Start(); };
@@ -104,6 +147,12 @@ namespace Classes
                 //ловим результаты всех запущенных потоков (основных и дочерних)
                 if (Algoritm_id.IndexOf("*1-1*") > -1) { _reportModel.Table_1_1 = task_1_1.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*1-2*") > -1) { _reportModel.Table_1_2 = task_1_2.Result; } // ожидаем получение результата
+                if (Algoritm_id.IndexOf("*1-3*") > -1) { _reportModel.Table_1_3 = task_1_3.Result; }
+                if (Algoritm_id.IndexOf("*1-4*") > -1) { _reportModel.Table_1_4 = task_1_4.Result; }
+                if (Algoritm_id.IndexOf("*1-5*") > -1) { _reportModel.Table_1_5 = task_1_5.Result; }
+                if (Algoritm_id.IndexOf("*1-6*") > -1) { _reportModel.Table_1_6 = task_1_6.Result; }
+                if (Algoritm_id.IndexOf("*1-7*") > -1) { _reportModel.Table_1_7 = task_1_7.Result; }
+                if (Algoritm_id.IndexOf("*1-8*") > -1) { _reportModel.Table_1_8 = task_1_8.Result; }
 
                 if (Algoritm_id.IndexOf("*2-0*") > -1) { _reportModel.AlarmMessege = task_2_0.Result; } // ожидаем получение результата Alarms messages
                 if (Algoritm_id.IndexOf("*2-1*") > -1) { _reportModel.Table_2_1 = task_2_1.Result; } // ожидаем получение результата
@@ -225,7 +274,7 @@ namespace Classes
                 }
                 SqlConnection CoNn = new SqlConnection();
                 CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
-                CoNn.OpenAsync();
+                CoNn.Open();
                 SqlCommand cmd3 = CoNn.CreateCommand();
                 cmd3.CommandText = _SQL;
                 SqlDataReader reader3 = cmd3.ExecuteReader();
@@ -786,8 +835,8 @@ namespace Classes
                     dat_count++;
                 }
 
-                List<Tabl_mas> Tabl_3 = new List<Tabl_mas>();//таблица
-                Tabl_mas mTabl_3 = new Tabl_mas();//запись таблицы
+                List<Tabl_mas> Tabl_1_2 = new List<Tabl_mas>();//таблица
+                Tabl_mas mTabl_1_2 = new Tabl_mas();//запись таблицы
                                                   //						  //пустая начальная запись
                 Zapis_t_mas last_zapis = new Zapis_t_mas();
 
@@ -798,13 +847,13 @@ namespace Classes
                 DateTime date;
                 foreach (Zapis_t_mas zapis in SPISOK)
                 {
-                    mTabl_3.datatime = zapis.DAT;
+                    mTabl_1_2.datatime = zapis.DAT;
                     DateTime.TryParse(zapis.DAT, out date);
-                    mTabl_3.sms = "Температура масла превышена";
-                    mTabl_3.T_mas = zapis.T_mas;
-                    Tabl_3.Add(mTabl_3);
+                    mTabl_1_2.sms = "Температура масла превышена";
+                    mTabl_1_2.T_mas = zapis.T_mas;
+                    Tabl_1_2.Add(mTabl_1_2);
                     j++;
-                    t_1_2.Table.Add(new Tabels_Models.Tab_1_2(date.ToString("yyyy-MM-dd HH-mm-ss"), mTabl_3.sms, zapis.T_mas));
+                    t_1_2.Table.Add(new Tabels_Models.Tab_1_2(date.ToString("yyyy-MM-dd HH-mm-ss"), mTabl_1_2.sms, zapis.T_mas));
                 }
                 CoNn.Close();
 
@@ -822,6 +871,1597 @@ namespace Classes
             }
             return (t_1_2);
         }
+        public Diag_result<Tabels_Models.Tab_1_3> Algoritm_1_3()
+        {
+            Diag_result<Tabels_Models.Tab_1_3> t_1_3 = new Diag_result<Tabels_Models.Tab_1_3>();
+            try
+            {
+                //выполнение алгоритма
+
+                string pPKM = "", T_vod = "", ChvKV = "", Regim = "";//для алгоритма по температуре воды
+
+                switch (_tablica)
+                {
+                    case "TE25KM_MSU":
+                        pPKM = "Analog_100"; T_vod = "Analog_29"; ChvKV = "Analog_130"; Regim = "Analog_99";
+                        break;
+                    case "TE25KM_HZM":
+                        pPKM = "Analog_100"; T_vod = "Analog_77"; ChvKV = "Analog_130"; Regim = "Analog_99";
+                        break;
+                    case "MSU_BS215":
+                        pPKM = "Analog_173"; T_vod = "Analog_150"; ChvKV = "Analog_55"; Regim = "Analog_174";
+                        break;
+                    case "2TE116U_01":
+                        pPKM = "Analog_93"; T_vod = "Analog_78"; ChvKV = "Analog_101"; Regim = "Analog_94";
+                        break;
+                    case "3TE116U_01":
+                        pPKM = "Analog_93"; T_vod = "Analog_78"; ChvKV = "Analog_101"; Regim = "Analog_94";
+                        break;
+                    case "2TE25A_01":
+                        pPKM = "Analog_107"; T_vod = "Analog_74"; ChvKV = "Analog_121"; Regim = "Analog_106";
+                        break;
+                    default:
+                        break;
+                }
+
+                //выбор первой строки в таблице инцидента
+                string _SQL = "with cte as (select ROW_NUMBER() over (order by MeasDateTime) as rn, * from " +
+                        "(SELECT[SectionID], [MeasDateTime],[" + pPKM + "], [" + T_vod + "], [" + ChvKV + "], [" + Regim + "] " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] ) as t1 " +
+                        "WHERE[SectionID] = " + _section_id + " and [" + ChvKV + "]>340 and [" + T_vod + "]>70 and [" + pPKM + "]>5 and [" + Regim + "]=4  " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))) " +
+                        "select TOP 1 d1.MeasDateTime,d1.[SectionID],d1.[" + pPKM + "], d1.[" + T_vod + "], d1.[" + ChvKV + "], d1.[" + Regim + "], " +
+                        "datediff(SECOND, d1.MeasDateTime, d2.MeasDateTime) as int_sec " +
+                        "from cte d1 " +
+                        "join cte d2 on d2.rn=d1.rn-1";
+
+                SqlConnection CoNn = new SqlConnection();
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+                SqlCommand cmd3 = CoNn.CreateCommand();
+                cmd3.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                cmd3.CommandText = _SQL;
+                //	int kol_count = cmd3.ExecuteScalar();
+                SqlDataReader reader3 = cmd3.ExecuteReader();
+
+
+                List<Zapis_t_vod> SPISOK = new List<Zapis_t_vod>();
+                long i = 0;
+                Int32 dat_count = 0;
+                Zapis_t_vod zap_Tv = new Zapis_t_vod();
+
+                while (reader3.Read())
+                {
+                    //подумать что сделать с парсингом dateTime для ускорения обработки json
+                    i++;
+                    {
+                        zap_Tv.DAT = reader3["MeasDateTime"].ToString();//date.ToString("yyyy-MM-dd HH:mm:ss");// + ", " + reader3[ar1].ToString().Replace(",", ".") + ", " + reader3[ar2].ToString().Replace(",", ".") + ", " + reader3[ar3].ToString().Replace(",", ".") + ", " + reader3[ar4].ToString().Replace(",", ".") + ", " + reader3[ar5].ToString().Replace(",", ".") + ", " + reader3[ar6].ToString().Replace(",", ".") + "\n ";
+                                                                        //		zap.PKM = reader3[pPKM].ToString();//ПКМD:\РЕЗЕРВНЫЕ КОПИИ ПРОЕКТОВ\WebApplication1\WebApplication1\Content\
+                        zap_Tv.T_vod = reader3[T_vod].ToString();//Т воды
+                        zap_Tv.ChvKV = reader3[ChvKV].ToString();//Частота вращения КВ
+                        zap_Tv.PKM = reader3[pPKM].ToString();//ПКМ
+                        zap_Tv.Regim = reader3[Regim].ToString();//Режим работы тепловоза
+                    }
+                    SPISOK.Add(zap_Tv);//количество заптсей
+                    dat_count++;
+                }
+                CoNn.Close();
+
+                i = 0;
+
+                //выбор инцидентов
+                _SQL = "with cte as (select ROW_NUMBER() over (order by MeasDateTime) as rn, * from " +
+                        "(SELECT[SectionID], [MeasDateTime],[" + pPKM + "], [" + T_vod + "], [" + ChvKV + "], [" + Regim + "] " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] ) as t1 " +
+                        "WHERE[SectionID] =  " + _section_id + " and [" + ChvKV + "]>340 and [" + T_vod + "]>70 and [" + pPKM + "]>5 and [" + Regim + "]=4 " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))) " +
+                        "select d1.MeasDateTime, d1.[SectionID], d1.[" + pPKM + "], d1.[" + T_vod + "], d1.[" + ChvKV + "], d1.[" + Regim + "], " +
+                        "datediff(SECOND, d1.MeasDateTime, d2.MeasDateTime) as int_sec " +
+                        "from cte d1 " +
+                        "join cte d2 on d2.rn= d1.rn - 1 " +
+                        "where datediff(MINUTE, d1.MeasDateTime, d2.MeasDateTime)<-10 ";
+
+                //SqlConnection CoNn = new SqlConnection();
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+                SqlCommand cmd4 = CoNn.CreateCommand();
+                cmd4.CommandText = _SQL;
+                SqlDataReader reader4 = cmd4.ExecuteReader();
+
+                while (reader4.Read())
+                {
+                    //подумать что сделать с парсингом dateTime для ускорения обработки json
+                    i++;
+                    {
+                        zap_Tv.DAT = reader4["MeasDateTime"].ToString();
+                        zap_Tv.T_vod = reader4[T_vod].ToString();//Т воды
+                        zap_Tv.ChvKV = reader4[ChvKV].ToString();//Частота вращения КВ
+                        zap_Tv.PKM = reader4[pPKM].ToString();//ПКМ
+                        zap_Tv.Regim = reader4[Regim].ToString();//Режим работы тепловоза
+
+                    }
+                    SPISOK.Add(zap_Tv);//количество заптсей
+                    dat_count++;
+                }
+
+                List<Tabl> Tabl_1_3 = new List<Tabl>();//таблица
+                Tabl vTabl_1_3 = new Tabl();//запись таблицы
+                                          //						  //пустая начальная запись
+                Zapis_t_vod last_zapis = new Zapis_t_vod();
+
+                last_zapis.DAT = "00.00.0000 00:00:00";
+
+                int j = 1;
+
+                DateTime date;
+                foreach (Zapis_t_vod zapis in SPISOK)
+                {
+                    vTabl_1_3.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    vTabl_1_3.sms = "Температура воды превышена";
+                    vTabl_1_3.T_vod = zapis.T_vod;
+                    Tabl_1_3.Add(vTabl_1_3);
+                    j++;
+                    t_1_3.Table.Add(new Tabels_Models.Tab_1_3(date.ToString("yyyy-MM-dd HH-mm-ss"), vTabl_1_3.sms, zapis.T_vod));
+                }
+                CoNn.Close();                         
+
+                //в самом конце сброс флага наличия ошибки
+                t_1_3.ERR = false;
+            }
+            catch (Exception ex)//если же возникла ошибка
+            {
+                t_1_3.ERR = true;
+                t_1_3.ERR_Message = ex.Message;
+            }
+            finally //в любом случае 
+            {
+                //можно например логировать событие    
+            }
+            return (t_1_3);
+        }
+        public Diag_result<Tabels_Models.Tab_1_4> Algoritm_1_4()
+        {
+            Diag_result<Tabels_Models.Tab_1_4> t_1_4 = new Diag_result<Tabels_Models.Tab_1_4>();
+            try
+            {
+                //выполнение алгоритма
+                DateTime date_beg, date_end;
+
+                double kmin = 0.087;//миним коэфф загрязненности
+                double kmax = 0.43; //максим коэфф загрязненности
+                double kz, Iz;      //коэфф загрязненности фильтра вычисляемый
+                string _SQL = "";
+
+                string pPKM = "", TNVD = "", FTOT = "", ChvKV = "", Regim = "";//для алгоритма топливной системы дизеля
+                switch (_tablica)
+                {
+                    case "TE25KM_MSU":
+                        pPKM = "Analog_100"; TNVD = "Analog_12"; FTOT = "Analog_11"; Regim = "Analog_99"; ChvKV = "Analog_130";
+                        break;
+                    case "TE25KM_HZM":
+                        pPKM = "Analog_100"; TNVD = "Analog_12"; FTOT = "Analog_11"; Regim = "Analog_99";
+                        break;
+                    case "MSU_BS215":
+                        pPKM = "Analog_173"; TNVD = "Analog_10"; FTOT = "Analog_9"; Regim = "Analog_174"; ChvKV = "Analog_55";
+                        break;
+                    case "2TE116U_01":
+                        pPKM = "Analog_93"; TNVD = "Analog_10"; FTOT = "Analog_9"; Regim = "Analog_94"; ChvKV = "Analog_101";
+                        break;
+                    case "3TE116U_01":
+                        pPKM = "Analog_93"; TNVD = "Analog_10"; FTOT = "Analog_9"; Regim = "Analog_94"; ChvKV = "Analog_101";
+                        break;
+                    case "2TE25A_01":
+                        pPKM = "Analog_107"; TNVD = "Analog_12"; FTOT = "Analog_11"; Regim = "Analog_106"; ChvKV = "Analog_121";  // ChKV=Analog_121/Analog_122
+                        break;
+                    default:
+                        break;
+                }
+
+                //выбор первой строки в таблице инцидента deltaP>1.5
+                if (_tablica == "TE25KM_HZM")
+                {
+                    _SQL = "SELECT top 1 [SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] " +
+                        "WHERE[SectionID] = " + _section_id + " and ([" + FTOT + "]-[" + TNVD + "]>1.5) and ([" + TNVD + "] between 0.003 and 6) " +
+                        " and ([" + FTOT + "] between 0.003 and 6) and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))" +
+                        "order by MeasDateTime  ";
+                }
+                else
+                {
+                    _SQL = "SELECT top 1 [SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + ChvKV + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] " +
+                        "WHERE[SectionID] = " + _section_id + " and [" + ChvKV + "]>340 and ([" + FTOT + "]-[" + TNVD + "]>1.5) and ([" + TNVD + "] between 0.003 and 6) " +
+                        " and ([" + FTOT + "] between 0.003 and 6) and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))" +
+                        "order by MeasDateTime  ";
+                }
+
+                SqlConnection CoNn = new SqlConnection();
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+
+                SqlCommand cmd5 = CoNn.CreateCommand();
+                cmd5.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                cmd5.CommandText = _SQL;
+                //	int kol_count = cmd3.ExecuteScalar();
+                SqlDataReader reader5 = cmd5.ExecuteReader();
+
+                List<Zapis_topl_sist> SPISOK = new List<Zapis_topl_sist>();
+                long i = 0;
+                Int32 dat_count = 0;
+                Zapis_topl_sist zap_ts = new Zapis_topl_sist();
+
+
+                while (reader5.Read())
+                {
+                    //подумать что сделать с парсингом dateTime для ускорения обработки json
+                    i++;
+                    {
+                        //zap.Cil = (string[])zap.Cil.Clone();//сщздаем копию массива для каждого набора температур
+
+                        zap_ts.DAT = reader5["MeasDateTime"].ToString();//дата
+                        zap_ts.TNVD = reader5[TNVD].ToString();//ТНВД
+                        zap_ts.FTOT = reader5[FTOT].ToString();//ФТОТ
+                        zap_ts.ChvKV = reader5[ChvKV].ToString();//Частота вращения КВ
+                        zap_ts.PKM = reader5[pPKM].ToString();//ПКМ
+                        zap_ts.Regim = reader5[Regim].ToString();//Режим работы тепловоза
+                        zap_ts.deltaP = reader5["deltaP"].ToString(); // перепад давления на фильтре 
+                        zap_ts.soob = "Фильтр тонкой очистки топлива предельно загрязен";
+                        zap_ts.znachenie = reader5["deltaP"].ToString();
+                    }
+                    SPISOK.Add(zap_ts);//количество заптсей
+                    dat_count++;
+                }
+
+                CoNn.Close();
+
+                i = 0;
+
+                //выбор инцидентов
+                if (_tablica == "TE25KM_HZM")
+                {
+                    _SQL = "with cte as (select ROW_NUMBER() over (order by MeasDateTime) as rn, * from " +
+                        "(SELECT[SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] ) as t1 " +
+                        "WHERE[SectionID] = " + _section_id + " and  ([" + FTOT + "]-[" + TNVD + "]>1.5) and ([" + TNVD + "] between 0.003 and 6) " +
+                        " and ([" + FTOT + "] between 0.003 and 6) and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))) " +
+                        "select d1.MeasDateTime, d1.[SectionID], d1.[" + pPKM + "], d1.[" + TNVD + "], d1.[" + FTOT + "],  d1.[" + Regim + "], " +
+                        "(d1.[" + FTOT + "]-d1.[" + TNVD + "]) as deltaP , datediff(SECOND, d1.MeasDateTime, d2.MeasDateTime) as int_sec " +
+                        "from cte d1 " +
+                        "join cte d2 on d2.rn= d1.rn - 1 " +
+                        "where datediff(MINUTE, d1.MeasDateTime, d2.MeasDateTime)<-10" +
+                        "order by MeasDateTime  ";
+                }
+                else
+                {
+                    _SQL = "with cte as (select ROW_NUMBER() over (order by MeasDateTime) as rn, * from " +
+                        "(SELECT[SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + ChvKV + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] ) as t1 " +
+                        "WHERE[SectionID] = " + _section_id + " and [" + ChvKV + "]>340 and ([" + FTOT + "]-[" + TNVD + "]>1.5) and ([" + TNVD + "] between 0.003 and 6) " +
+                        " and ([" + FTOT + "] between 0.003 and 6) and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))) " +
+                        "select d1.MeasDateTime, d1.[SectionID], d1.[" + pPKM + "], d1.[" + TNVD + "], d1.[" + FTOT + "], d1.[" + ChvKV + "], d1.[" + Regim + "], " +
+                        "(d1.[" + FTOT + "]-d1.[" + TNVD + "]) as deltaP , datediff(SECOND, d1.MeasDateTime, d2.MeasDateTime) as int_sec " +
+                        "from cte d1 " +
+                        "join cte d2 on d2.rn= d1.rn - 1 " +
+                        "where datediff(MINUTE, d1.MeasDateTime, d2.MeasDateTime)<-10" +
+                        "order by MeasDateTime  ";
+                }
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+                SqlCommand cmd6 = CoNn.CreateCommand();
+                cmd6.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                cmd6.CommandText = _SQL;
+                SqlDataReader reader6 = cmd6.ExecuteReader();
+
+                while (reader6.Read())
+                {
+                    //подумать что сделать с парсингом dateTime для ускорения обработки json
+                    i++;
+
+                    {
+                        zap_ts.DAT = reader6["MeasDateTime"].ToString();//дата
+                        zap_ts.TNVD = reader6[TNVD].ToString();//ТНВД
+                        zap_ts.FTOT = reader6[FTOT].ToString();//ФТОТ
+                        zap_ts.ChvKV = reader6[ChvKV].ToString();//Частота вращения КВ
+                        zap_ts.PKM = reader6[pPKM].ToString();//ПКМ
+                        zap_ts.Regim = reader6[Regim].ToString();//Режим работы тепловоза
+                        zap_ts.deltaP = reader6["deltaP"].ToString();//Режим работы тепловоза // перепад давления на 
+                        zap_ts.soob = "Фильтр тонкой очистки топлива предельно загрязен";
+                        zap_ts.znachenie = reader6["deltaP"].ToString();
+                    }
+                    SPISOK.Add(zap_ts);//количество заптсей
+                    dat_count++;
+                    zap_ts.soob = "";
+                    //date_copy = date;
+                }
+
+                List<Tabl_ts> Tabl_4 = new List<Tabl_ts>();//таблица
+                Tabl_ts tsTabl_4 = new Tabl_ts();//запись таблицы
+                                                 //						  //пустая начальная запись
+                Zapis_topl_sist last_zapis = new Zapis_topl_sist();
+
+                last_zapis.DAT = "00.00.0000 00:00:00";
+
+                int j = 1;
+
+                DateTime date;
+
+                foreach (Zapis_topl_sist zapis in SPISOK)
+                {
+                    tsTabl_4.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    tsTabl_4.sms = zapis.soob;
+                    tsTabl_4.znach = Convert.ToString(zapis.znachenie);
+                    Tabl_4.Add(tsTabl_4);
+                    j++;
+                    t_1_4.Table.Add(new Tabels_Models.Tab_1_4(date.ToString("yyyy-MM-dd HH-mm-ss"), tsTabl_4.sms, zapis.znachenie));
+                }
+                
+                CoNn.Close();
+
+                //выбор первой строки в таблице инцидента FTOT<0.9
+                if (_tablica == "TE25KM_HZM")
+                {
+                    _SQL = "SELECT top 1 [SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] " +
+                        "WHERE[SectionID] = " + _section_id + " and  ([" + FTOT + "] between 0.003 and 0.9) and ([" + TNVD + "] between 0.003 and 6)  and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102)) " +
+                        "order by MeasDateTime ";
+                }
+                else
+                {
+                    _SQL = "SELECT top 1 [SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + ChvKV + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] " +
+                        "WHERE[SectionID] = " + _section_id + " and [" + ChvKV + "]>340 and ([" + FTOT + "] between 0.003 and 0.9) and ([" + TNVD + "] between 0.003 and 6)  and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102)) " +
+                        "order by MeasDateTime ";
+                }
+
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+                SqlCommand cmd7 = CoNn.CreateCommand();
+                cmd7.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                cmd7.CommandText = _SQL;
+                SqlDataReader reader7 = cmd7.ExecuteReader();
+
+                while (reader7.Read())
+                {
+                    //подумать что сделать с парсингом dateTime для ускорения обработки json
+                    i++;
+
+                    {
+                        zap_ts.DAT = reader7["MeasDateTime"].ToString();//дата
+                        zap_ts.TNVD = reader7[TNVD].ToString();//ТНВД
+                        zap_ts.FTOT = reader7[FTOT].ToString();//ФТОТ
+                        zap_ts.ChvKV = reader7[ChvKV].ToString();//Частота вращения КВ
+                        zap_ts.PKM = reader7[pPKM].ToString();//ПКМ
+                        zap_ts.soob = "Давление в топливной магистрали ниже нормы";
+                        zap_ts.znachenie = Convert.ToString(Math.Round(Convert.ToDouble(reader7[FTOT].ToString()), 3));//ФТОТ
+                    }
+                    SPISOK.Add(zap_ts);//количество заптсей
+                    dat_count++;
+                    zap_ts.soob = "";
+                }
+
+                CoNn.Close();
+
+                i = 0;
+
+                //выбор инцидентов
+                if (_tablica == "TE25KM_HZM")
+                {
+                    _SQL = "with cte as (select ROW_NUMBER() over (order by MeasDateTime) as rn, * from " +
+                        "(SELECT[SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] ) as t1 " +
+                        "WHERE[SectionID] = " + _section_id + " and  ([" + FTOT + "] between 0.003 and 0.9) and ([" + TNVD + "] between 0.003 and 6)  and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))) " +
+                        "select d1.MeasDateTime, d1.[SectionID], d1.[" + pPKM + "], d1.[" + TNVD + "], d1.[" + FTOT + "],  d1.[" + Regim + "], " +
+                        "(d1.[" + FTOT + "]-d1.[" + TNVD + "]) as deltaP , datediff(SECOND, d1.MeasDateTime, d2.MeasDateTime) as int_sec " +
+                        "from cte d1 " +
+                        "join cte d2 on d2.rn= d1.rn - 1 " +
+                        "where datediff(MINUTE, d1.MeasDateTime, d2.MeasDateTime)<-10" +
+                        "order by MeasDateTime ";
+                }
+                else
+                {
+                    _SQL = "with cte as (select ROW_NUMBER() over (order by MeasDateTime) as rn, * from " +
+                        "(SELECT[SectionID], [MeasDateTime],[" + pPKM + "], [" + TNVD + "], [" + FTOT + "], [" + ChvKV + "], [" + Regim + "] ,([" + FTOT + "]-[" + TNVD + "]) as deltaP " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + " ] ) as t1 " +
+                        "WHERE[SectionID] = " + _section_id + " and [" + ChvKV + "]>340 and  ([" + FTOT + "] between 0.003 and 0.9) and ([" + TNVD + "] between 0.003 and 6)  and ([" + pPKM + "] between 1 and 15) " +
+                        "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102))) " +
+                        "select d1.MeasDateTime, d1.[SectionID], d1.[" + pPKM + "], d1.[" + TNVD + "], d1.[" + FTOT + "], d1.[" + ChvKV + "], d1.[" + Regim + "], " +
+                        "(d1.[" + FTOT + "]-d1.[" + TNVD + "]) as deltaP , datediff(SECOND, d1.MeasDateTime, d2.MeasDateTime) as int_sec " +
+                        "from cte d1 " +
+                        "join cte d2 on d2.rn= d1.rn - 1 " +
+                        "where datediff(MINUTE, d1.MeasDateTime, d2.MeasDateTime)<-10" +
+                        "order by MeasDateTime ";
+                }
+
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+                SqlCommand cmd8 = CoNn.CreateCommand();
+                cmd8.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                cmd8.CommandText = _SQL;
+                SqlDataReader reader8 = cmd8.ExecuteReader();
+
+                while (reader8.Read())
+                {
+                    //подумать что сделать с парсингом dateTime для ускорения обработки json
+                    i++;
+                    {
+                        zap_ts.DAT = reader8["MeasDateTime"].ToString();//дата
+                        zap_ts.TNVD = reader8[TNVD].ToString();//ТНВД
+                        zap_ts.FTOT = reader8[FTOT].ToString();//ФТОТ
+                        zap_ts.ChvKV = reader8[ChvKV].ToString();//Частота вращения КВ
+                        zap_ts.PKM = reader8[pPKM].ToString();//ПКМ
+                        zap_ts.soob = "Давление в топливной магистрали ниже нормы";
+                        zap_ts.znachenie = Convert.ToString(Math.Round(Convert.ToDouble(reader8[FTOT].ToString()), 3));//ФТОТ
+                                                                                                                       //zap_ts.Regim = reader8[Regim].ToString();//Режим работы тепловоза
+                    }
+                    SPISOK.Add(zap_ts);//количество заптсей
+                    dat_count++;
+                    zap_ts.soob = "";
+                    //date_copy = date;
+                }
+
+                List<Tabl_ts> Tabl_5 = new List<Tabl_ts>();//таблица
+                Tabl_ts tsTabl_5 = new Tabl_ts();//запись таблицы
+                                                 //						  //пустая начальная запись
+                Zapis_topl_sist last_zapis1 = new Zapis_topl_sist();
+
+                last_zapis1.DAT = "00.00.0000 00:00:00";
+
+                int k = j;
+
+                foreach (Zapis_topl_sist zapis in SPISOK)
+                {
+                    tsTabl_5.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    tsTabl_5.sms = zapis.soob;
+                    //tsTabl_5.FTOT = zapis.FTOT;
+                    //tsTabl_5.znach = Convert.ToString(Math.Round((Convert.ToDouble(zapis.znachenie)),1));
+                    tsTabl_5.znach = Convert.ToString(zapis.znachenie);
+                    Tabl_5.Add(tsTabl_5);
+                    k++;
+                    t_1_4.Table.Add(new Tabels_Models.Tab_1_4(date.ToString("yyyy-MM-dd HH-mm-ss"), tsTabl_5.sms, zapis.znachenie));
+                }
+
+                CoNn.Close();
+
+                double sum_FTOT, sum_TNVD, sum_prFTOTnaTNVD, sum_TNVDkvad, sum_kvadsumTNVD, kol_izmer;
+                string year, month, day;
+                string dat_ot_new, dat_do_new;
+
+                dat_ot_new = dat_ot;
+                dat_do_new = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new + " 23:59:59");
+
+                while (date_beg < date_end)
+                {
+                    //общий запрос
+                    _SQL = "declare @i int " +
+                            "set @i = 5 " +
+                            "while @i < 16 " +
+                            "begin " +
+                            "with dates(DateTime, [" + pPKM + "], [" + TNVD + "], [" + FTOT + "]) as ( " +
+                            "select DISTINCT CAST(MeasDateTime as DateTime),[" + pPKM + "], [" + TNVD + "], [" + FTOT + "] " +
+                            "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                            "WHERE ([SectionID]=  " + _section_id + ") and ([" + FTOT + "] between 0 and 6) and ([" + TNVD + "] between 0 and 6) " +
+                            "and ([" + pPKM + "]= @i) " +
+                            "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new + " 23:59:59', 102))), " +
+                            "groups AS( " +
+                            "SELECT " +
+                            "ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
+                            "dateadd(second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + pPKM + "],[" + TNVD + "],[" + FTOT + "] " +
+                            "FROM dates d " +
+                            ")  " +
+                            "SELECT " +
+                                "top 1 COUNT(*) AS consecutiveDates, " +
+                                "MIN(DateTime) AS minDate, " +
+                                "MAX(DateTime) AS maxDate, " +
+                                "MAX(" + FTOT + ") as FTOT,  " +
+                                "MAX(" + TNVD + ") as TNVD,  " +
+                                "SUM(" + FTOT + ")as SumFTOT, " +
+                                "SUM(" + TNVD + ")as SumTNVD, " +
+                                "SUM(" + FTOT + "*" + TNVD + ") as prFTOTTNVD, " +
+                                "SUM(" + TNVD + "*" + TNVD + ") as kvTNVD, " +
+                                "MAX(" + pPKM + ") as PKM, " +
+                                "datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
+                           "FROM   groups " +
+                           "GROUP BY grp " +
+                           "ORDER BY 1 DESC, 2 DESC " +
+                        "set @i=@i+1 " +
+                        "end ; ";
+
+                    CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                    CoNn.Open();
+                    SqlCommand cmd9 = CoNn.CreateCommand();
+                    cmd9.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                    cmd9.CommandText = _SQL;
+                    SqlDataReader reader9 = cmd9.ExecuteReader();
+
+                    sum_TNVD = 0;
+                    sum_FTOT = 0;
+                    sum_prFTOTnaTNVD = 0;
+                    sum_TNVDkvad = 0;
+                    sum_kvadsumTNVD = 0;
+                    kol_izmer = 0;
+                    //kz = 0;
+
+                    if (reader9.HasRows) //чтение нескольких таблиц в одном запросе
+                    {
+                        while (reader9.Read())
+                        {
+                            zap_ts.Kol_izm = reader9["consecutiveDates"].ToString();
+                            zap_ts.sumTNVD = reader9["sumTNVD"].ToString();
+                            zap_ts.sumFTOT = reader9["sumFTOT"].ToString();
+                            zap_ts.prFTOTTNVD = reader9["prFTOTTNVD"].ToString();
+                            zap_ts.kvTNVD = reader9["kvTNVD"].ToString();
+                            zap_ts.PKM = reader9["PKM"].ToString();
+                            zap_ts.DAT = Convert.ToDateTime(reader9["MinDate"].ToString()).ToShortDateString();//дата
+
+                            kol_izmer = kol_izmer + Convert.ToDouble(zap_ts.Kol_izm);
+                            sum_TNVD = sum_TNVD + Convert.ToDouble(zap_ts.sumTNVD);
+                            sum_FTOT = sum_FTOT + Convert.ToDouble(zap_ts.sumFTOT);
+                            sum_prFTOTnaTNVD = sum_prFTOTnaTNVD + Convert.ToDouble(zap_ts.prFTOTTNVD);
+                            sum_TNVDkvad = sum_TNVDkvad + Convert.ToDouble(zap_ts.kvTNVD);
+                            sum_kvadsumTNVD = sum_kvadsumTNVD + Convert.ToDouble(zap_ts.kvTNVD);
+
+                            reader9.NextResult();
+                        }
+
+                        kz = (kol_izmer * sum_prFTOTnaTNVD - (sum_TNVD * sum_FTOT)) / (kol_izmer * sum_TNVD - (sum_TNVD * sum_TNVD));
+                        //kz = (kol_izmer * sum_prFTOTnaTNVD - (sum_TNVD * sum_FTOT)) / (kol_izmer * sum_TNVDkvad - (sum_TNVD * sum_TNVD));   (!!!!!!!!!!!!!!!)
+                        Iz = Math.Abs(100 * (kz - kmin) / (kmax - kmin)); // Math.asb
+
+                        zap_ts.iz = Convert.ToString(Math.Round(Iz, 1));
+
+                        if (Iz > 50)  //поменять на 50%
+                        {
+                            zap_ts.soob = "Загрязнение фильтра тонкой очистки топлива больше 50%";
+                        }
+                        else
+                        {
+                            zap_ts.soob = "";
+                        }
+                        SPISOK.Add(zap_ts);//количество заптсей
+                    }
+
+                    else
+                    {
+                        Console.WriteLine("No rows found.");
+                    }
+
+                    CoNn.Close();
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year = date_beg.ToShortDateString().Remove(0, 6);
+                    month = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new = year + "." + month + "." + day; // переводим в формат yyyymmdd для sql 
+
+                    //dat_ot = Convert.ToDateTime(dat_ot).AddDays(1).ToShortDateString().Remove(0, 6) + "." + Convert.ToDateTime(dat_ot).AddDays(1).ToShortDateString().Remove(0, 3);//+ Convert.ToDateTime(dat_ot).AddDays(1).ToShortDateString().Remove(5, 5) +"."+ Convert.ToDateTime(dat_ot).AddDays(1).ToShortDateString().Remove(2);
+
+                } //общий запрос на sql
+
+                List<Tabl_ts> Tabl_6 = new List<Tabl_ts>();//таблица
+                Tabl_ts tsTabl_6 = new Tabl_ts();//запись таблицы
+                                                 //						  //пустая начальная запись
+                Zapis_topl_sist last_zapis2 = new Zapis_topl_sist();
+                last_zapis2.DAT = "00.00.0000 00:00:00";
+
+                int l = 1;
+
+                foreach (Zapis_topl_sist zapis in SPISOK)
+                {
+                    tsTabl_6.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    tsTabl_6.Izagr = zapis.iz;
+                    tsTabl_6.sms = zapis.soob;
+
+                    Tabl_6.Add(tsTabl_6);
+                    l++;
+                    t_1_4.Table.Add(new Tabels_Models.Tab_1_4(date.ToString("yyyy-MM-dd HH-mm-ss"), zapis.soob, zapis.iz));
+                }
+                
+                //в самом конце сброс флага наличия ошибки
+                t_1_4.ERR = false;
+            }
+            catch (Exception ex)//если же возникла ошибка
+            {
+                t_1_4.ERR = true;
+                t_1_4.ERR_Message = ex.Message;
+            }
+            finally //в любом случае 
+            {
+                //можно например логировать событие    
+            }
+            return (t_1_4);
+        }
+        public Diag_result<Tabels_Models.Tab_1_5> Algoritm_1_5()
+        {
+            Diag_result<Tabels_Models.Tab_1_5> t_1_5 = new Diag_result<Tabels_Models.Tab_1_5>();
+            try
+            {
+                DateTime date_beg, date_end;
+
+                double kminm = 0.95;//миним коэфф загрязненности
+                double kmaxm = 0.8; //максим коэфф загрязненности
+                double kzm, kzm2, Izm;     //коэфф загрязненности фильтра вычисляемый
+
+                string pPKM = "", Tm_vih = "", Pm_vh = "", ChvKV = "", Pm_vih2 = "";//для алгоритма топливной системы дизеля
+                switch (_tablica)
+                {
+                    case "TE25KM_MSU":
+                        pPKM = "Analog_100"; Tm_vih = "Analog_75"; Pm_vh = "Analog_122"; Pm_vih2 = "Analog_10"; ChvKV = "Analog_130";
+                        break;
+                    case "TE25KM_HZM":
+                        pPKM = "Analog_100"; Tm_vih = "Analog_75"; Pm_vh = "Analog_124"; Pm_vih2 = "Analog_10";
+                        break;
+                    case "MSU_BS215":
+                        pPKM = "Analog_173"; Tm_vih = "Analog_148"; Pm_vh = "Analog_53"; Pm_vih2 = "Analog_1"; ChvKV = "Analog_55";
+                        break;
+                    case "2TE116U_01":
+                        pPKM = "Analog_93"; Tm_vih = "Analog_76"; Pm_vh = "Analog_15"; Pm_vih2 = "Analog_1"; ChvKV = "Analog_101";
+                        break;
+                    case "3TE116U_01":
+                        pPKM = "Analog_93"; Tm_vih = "Analog_76"; Pm_vh = "Analog_15"; Pm_vih2 = "Analog_1"; ChvKV = "Analog_101";
+                        break;
+                    case "2TE25A_01":
+                        pPKM = "Analog_107"; Tm_vih = "Analog_73"; Pm_vh = "Analog_128"; Pm_vih2 = "Analog_10"; ChvKV = "Analog_121";  // ChKV=Analog_121/Analog_122
+                        break;
+                    default:
+                        break;
+                }
+
+                //общий запрос
+                string _SQL = "SELECT  distinct CAST([MeasDateTime] as DATE) as Data " +
+                        "FROM[diag_lcm].[Res].[_" + _tablica + "] " +
+                        "WHERE[SectionID] = " + _section_id + " and [" + Tm_vih + "] >= 65  and([" + Pm_vih2 + "] -[" + Pm_vh + "] > 2) " +
+                        "and MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_do + " 23:59:59', 102) " +
+                        "and[" + pPKM + "] > 12 " +
+                        "ORDER BY Data ";
+
+                SqlConnection CoNn = new SqlConnection();
+                CoNn.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                CoNn.Open();
+                SqlCommand cmd10 = CoNn.CreateCommand();
+                cmd10.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                cmd10.CommandText = _SQL;
+                SqlDataReader reader10 = cmd10.ExecuteReader();
+
+                List<Zapis_masl_sist> SPISOK = new List<Zapis_masl_sist>();
+                long i = 0;
+                Int32 dat_count = 0;
+                Zapis_masl_sist zap_ms = new Zapis_masl_sist();
+
+                while (reader10.Read())
+                {
+                    i++;
+                    {
+                        zap_ms.DAT = reader10["Data"].ToString();//дата
+                        zap_ms.soob1 = "Внимание! Фильтр загрязнен, требуется ТО";
+                        //zap_ms.znachenie = reader6["deltaP"].ToString();
+
+                        //reader10.NextResult();
+                    }
+                    SPISOK.Add(zap_ms);//количество заптсей
+                    dat_count++;
+                    zap_ms.soob1 = "";
+                    //date_copy = date;
+                }
+
+                List<Tabl_ms> Tabl_7 = new List<Tabl_ms>();//таблица
+                Tabl_ms msTabl_7 = new Tabl_ms();//запись таблицы
+                                                 //						  //пустая начальная запись
+                Zapis_masl_sist last_zapis = new Zapis_masl_sist();
+
+                last_zapis.DAT = "00.00.0000 00:00:00";
+
+                DateTime date;
+
+                int l = 1;
+
+                foreach (Zapis_masl_sist zapis in SPISOK)
+                {
+                    msTabl_7.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    //tsTabl_7.Izagr = zapis.iz;
+                    msTabl_7.sms = zapis.soob1;
+
+                    Tabl_7.Add(msTabl_7);
+                    l++;
+                    t_1_5.Table.Add(new Tabels_Models.Tab_1_5(date.ToString("yyyy-MM-dd"), zapis.soob1));
+                }
+                
+                CoNn.Close();
+
+                int z;
+
+                double sum_Pmvh, sum_Pmvih2, sum_prPmvhnaPmvih2, sum_kvadsumPmvh, sum_kvadsumPmvih2, kol_izmer;
+                string year1, month1, day1;
+                string dat_ot_new1, dat_do_new1;
+
+                dat_ot_new1 = dat_ot;
+                dat_do_new1 = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new1 + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new1 + " 23:59:59");
+
+                while (date_beg < date_end)
+                {
+                    //общий запрос
+                    _SQL = "declare @i int " +
+                            "set @i = 2 " +
+                            "while @i < 16 " +
+                            "begin " +
+                            "with dates(DateTime, [" + pPKM + "], [" + Tm_vih + "], [" + Pm_vih2 + "], [" + Pm_vh + "]) as ( " +
+                            "select DISTINCT CAST(MeasDateTime as DateTime),[" + pPKM + "], [" + Tm_vih + "], [" + Pm_vih2 + "], [" + Pm_vh + "] " +
+                            "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                            "WHERE ([SectionID]=  " + _section_id + ") and ([" + Tm_vih + "] >65) and ([" + Pm_vih2 + "]>[" + Pm_vh + "]) " +
+                            "and ([" + pPKM + "]= @i) " +
+                            "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new1 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new1 + " 23:59:59', 102))), " +
+                            "groups AS( " +
+                            "SELECT " +
+                            "ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
+                            "dateadd(second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + pPKM + "], [" + Tm_vih + "], [" + Pm_vih2 + "], [" + Pm_vh + "] " +
+                            "FROM dates d " +
+                            ")  " +
+                            "SELECT " +
+                                "top 1 COUNT(*) AS consecutiveDates, " +
+                                "MIN(DateTime) AS minDate, " +
+                                "MAX(DateTime) AS maxDate, " +
+                                "MAX(" + Pm_vh + ") as Pm_vh,  " +
+                                "MAX(" + Pm_vih2 + ") as Pm_vih2,  " +
+                                "SUM(" + Pm_vh + ")as SumPm_vh, " +
+                                "SUM(" + Pm_vih2 + ")as SumPm_vih2, " +
+                                "SUM(" + Pm_vh + "*" + Pm_vih2 + ") as prPm_vhPm_vih2, " +
+                                "SUM(" + Pm_vh + "*" + Pm_vh + ") as kvPm_vh, " +
+                                "SUM(" + Pm_vih2 + "*" + Pm_vih2 + ") as kvPm_vih2, " +
+                                "MAX(" + pPKM + ") as PKM, " +
+                                "datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
+                           "FROM   groups " +
+                           "GROUP BY grp " +
+                           "ORDER BY 1 DESC, 2 DESC " +
+                        "set @i=@i+1 " +
+                        "end; ";
+
+                    SqlConnection CoNn2 = new SqlConnection();
+                    CoNn2.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString;
+                    CoNn2.Open();
+                    SqlCommand cmd11 = CoNn2.CreateCommand();
+                    cmd11.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                    cmd11.CommandText = _SQL;
+                    SqlDataReader reader11 = cmd11.ExecuteReader();                   
+
+                    sum_Pmvh = 0;
+                    sum_Pmvih2 = 0;
+                    sum_prPmvhnaPmvih2 = 0;
+                    sum_kvadsumPmvh = 0;
+                    sum_kvadsumPmvih2 = 0;
+                    kol_izmer = 0;
+                    Izm = 0;
+                    z = 0;
+
+                    zap_ms.soob2 = "";
+
+                    if (reader11.HasRows) //чтение нескольких таблиц в одном запросе
+                    {
+                        while (reader11.Read())
+                        {
+                            zap_ms.Kol_izm = reader11["consecutiveDates"].ToString();
+                            zap_ms.sum_Pmvh = reader11["SumPm_vh"].ToString();
+                            zap_ms.sum_Pmvih2 = reader11["SumPm_vih2"].ToString();
+                            zap_ms.sum_prPmvhnaPmvih2 = reader11["prPm_vhPm_vih2"].ToString();
+                            zap_ms.sum_kvadsumPmvh = reader11["kvPm_vh"].ToString();
+                            zap_ms.sum_kvadsumPmvih2 = reader11["kvPm_vih2"].ToString();
+                            zap_ms.PKM = reader11["PKM"].ToString();
+                            zap_ms.DAT = Convert.ToDateTime(reader11["MinDate"].ToString()).ToShortDateString();//дата
+
+                            kol_izmer = kol_izmer + Convert.ToDouble(zap_ms.Kol_izm);
+                            sum_Pmvh = sum_Pmvh + Convert.ToDouble(zap_ms.sum_Pmvh);
+                            sum_Pmvih2 = sum_Pmvih2 + Convert.ToDouble(zap_ms.sum_Pmvih2);
+                            sum_prPmvhnaPmvih2 = sum_prPmvhnaPmvih2 + Convert.ToDouble(zap_ms.sum_prPmvhnaPmvih2);
+                            sum_kvadsumPmvh = sum_kvadsumPmvh + Convert.ToDouble(zap_ms.sum_kvadsumPmvh);
+                            sum_kvadsumPmvih2 = sum_kvadsumPmvih2 + Convert.ToDouble(zap_ms.sum_kvadsumPmvih2);
+
+                            reader11.NextResult();
+                            z++;
+                        }
+
+                        if (z > 5)
+                        {
+                            kzm2 = Math.Abs((kol_izmer * sum_prPmvhnaPmvih2 - (sum_Pmvh * sum_Pmvih2)) / (kol_izmer * sum_kvadsumPmvih2 - (sum_Pmvih2 * sum_Pmvih2)));
+
+                            //kzm = (kol_izmer * sum_prPmvhnaPmvih2 - (sum_Pmvh * sum_Pmvih2)) / (kol_izmer * sum_Pmvh - (sum_Pmvh * sum_Pmvh));
+                            //Izm = Math.Abs(100 * (kzm - kminm) / (kmaxm - kminm)); // Math.asb
+                            //Izm =Math.Round((kzm - kminm) / (kmaxm - kminm)*100,1); // Math.asb
+
+                            zap_ms.kz = Convert.ToString(Math.Round(kzm2, 2));
+
+                            //НУЖНО
+                            if (kzm2 > 0.85)  //поменять на 50%
+                            {
+                                zap_ms.soob2 = "Внимание! Степень общего износа подшипников коленчатого вала 50%, kz=" + Convert.ToString(Math.Round(kzm2, 2));// +" , Kz= "+ Convert.ToString(kzm);
+                            }
+                            else
+                            {
+                                zap_ms.soob2 = "";
+                            }
+                            SPISOK.Add(zap_ms);//количество записей
+                        }
+                    }
+
+                    else
+                    {
+                        Console.WriteLine("No rows found.");
+                    }
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year1 = date_beg.ToShortDateString().Remove(0, 6);
+                    month1 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day1 = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new1 = year1 + "." + month1 + "." + day1; // переводим в формат yyyymmdd для sql 
+
+                } //общий запрос на sql
+                List<Tabl_ms> Tabl_8 = new List<Tabl_ms>();//таблица
+                Tabl_ms msTabl_8 = new Tabl_ms();//запись таблицы
+                                                 //						  //пустая начальная запись
+                                                 //	Zapis_masl_sist last_zapis = new Zapis_masl_sist();
+                last_zapis.DAT = "00.00.0000 00:00:00";
+
+                int j = l;
+
+                foreach (Zapis_masl_sist zapis in SPISOK)
+                {
+                    msTabl_8.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    msTabl_8.Kzagr = zapis.kz;
+                    //msTabl_8.sms = zapis.soob;
+
+                    Tabl_8.Add(msTabl_8);
+                    j++;
+                    t_1_5.Table.Add(new Tabels_Models.Tab_1_5(date.ToString("yyyy-MM-dd"), zapis.soob2));
+                }                
+                
+                //в самом конце сброс флага наличия ошибки
+                t_1_5.ERR = false;
+            }
+            catch (Exception ex)//если же возникла ошибка
+            {
+                t_1_5.ERR = true;
+                t_1_5.ERR_Message = ex.Message;
+            }
+            finally //в любом случае 
+            {
+                //можно например логировать событие    
+            }
+            return (t_1_5);
+        }
+        public Diag_result<Tabels_Models.Tab_1_6> Algoritm_1_6()
+        {
+            Diag_result<Tabels_Models.Tab_1_6> t_1_6 = new Diag_result<Tabels_Models.Tab_1_6>();
+            try
+            {
+                DateTime date_beg, date_end;
+
+                string pPKM = "", ChVRTk = "", Pnad_vozd = "", TLC = "", TPC = "", TOkr_sr = "", PTG = "", Regim = "", ChVKV = "";//для система воздухоснабжения дизеля
+                switch (_tablica)
+                {
+                    case "MSU_BS215":
+                        pPKM = "Analog_173"; ChVRTk = "Analog_55"; Pnad_vozd = "Analog_54"; TLC = "Analog_129"; TPC = "Analog_138";
+                        TOkr_sr = "Analog_145"; PTG = "Analog_193"; Regim = "Analog_174"; ChVKV = "Analog_55";
+                        break;
+                    default:
+                        break;
+                }
+
+                string year15, month15, day15;
+                string dat_ot_new15, dat_do_new15;
+
+                double k_nadd = 0.006;
+                double P_nadd = 1.45;
+
+                double k_nadd_rasch, k_razn_nadd;
+
+
+                dat_ot_new15 = dat_ot;
+                dat_do_new15 = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new15 + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new15 + " 23:59:59");
+
+                int dannie = 0;     //проверка на наличие данных в основном/первом запросе
+
+                List<Zapis_Vozduh> SPISOK = new List<Zapis_Vozduh>();
+                long i = 0;
+                Zapis_Vozduh zap_vozd = new Zapis_Vozduh();
+
+
+                while (date_beg < date_end)
+                {
+                    SqlConnection Connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString);
+                    SqlCommand Command = Connection.CreateCommand();
+                    Command.CommandText = "with dates(DateTime, [" + pPKM + "], [" + ChVRTk + "], [" + Pnad_vozd + "], [" + TOkr_sr + "], [" + Regim + "]) as ( " +
+                                          "select DISTINCT CAST(MeasDateTime as DateTime),[" + pPKM + "], [" + ChVRTk + "], [" + Pnad_vozd + "], [" + TOkr_sr + "], [" + Regim + "] " +
+                                          "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                                          "WHERE [SectionID]= " + _section_id + " and [" + pPKM + "]= 15 and [" + ChVKV + "]>340 and [" + Regim + "]=5 and [" + TOkr_sr + "]<45 " +
+                                          "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new15 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new15 + " 23:59:59', 102))),  " +
+                                          "groups AS(  " +
+                                          "SELECT " +
+                                          "ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
+                                          "dateadd (second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + pPKM + "], [" + ChVRTk + "], [" + Pnad_vozd + "], [" + TOkr_sr + "] " +
+                                          "FROM dates d " +
+                                          "  )  " +
+                                          "SELECT " +
+                                          "top 1 COUNT(*) AS consecutiveDates, " +
+                                          "MIN(DateTime) AS minDate, " +
+                                          "MAX(DateTime) AS maxDate, " +
+                                          "AVG([" + ChVRTk + "]) as ChVRTK,  " +
+                                          "AVG([" + Pnad_vozd + "]) as Pnad_vozd,  " +
+                                          "AVG([" + TOkr_sr + "]) as T_okrsr, " +
+                                          "datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
+                                          "FROM   groups " +
+                                          "GROUP BY grp " +
+                                          "ORDER BY 1 DESC, 2 DESC ";
+
+                    Connection.Open();
+                    SqlDataReader reader30 = Command.ExecuteReader();
+                    //  cmd12.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                    //if null               !!!!!!!!
+
+                    if (reader30.HasRows) //проверка на содержание одной или несколько строк, есть ли данные
+                    {
+                        dannie = 1;
+                    }
+                    else
+                    {
+                        dannie = 0;
+                    }
+
+                    while ((reader30.Read()) && (dannie == 1))
+                    {
+                        zap_vozd.PKM = "15";
+                        zap_vozd.DAT = Convert.ToDateTime(reader30["MaxDate"].ToString()).ToString();//дата
+                        zap_vozd.Pnadd = Convert.ToString(Convert.ToDouble(reader30["Pnad_vozd"].ToString()) / 100);
+                        zap_vozd.Tokr = reader30["T_okrsr"].ToString();
+                        zap_vozd.soob1 = "Отклонение в системе воздухоснабжения дизеля";
+
+                        k_nadd_rasch = P_nadd - k_nadd * (Convert.ToDouble(zap_vozd.Tokr) - 293);
+                        k_razn_nadd = Math.Round((Math.Abs(k_nadd_rasch - Convert.ToDouble(zap_vozd.Pnadd) / 100) - 1) * 100, 0);
+
+                        zap_vozd.k_razn_nadd = Convert.ToString(k_razn_nadd);
+
+                        if (k_razn_nadd > 10)
+                        {
+                            SPISOK.Add(zap_vozd);//количество записей
+                        }
+
+                        zap_vozd.soob1 = "";
+                    }
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year15 = date_beg.ToShortDateString().Remove(0, 6);
+                    month15 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day15 = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new15 = year15 + "." + month15 + "." + day15; // переводим в формат yyyymmdd для sql
+
+                    Connection.Close();
+
+                } //while (date_beg < date_end)
+
+                List<Tabl_vozd> Tabl_19 = new List<Tabl_vozd>();//таблица
+                Tabl_vozd vTabl_19 = new Tabl_vozd();//запись таблицы
+                                                     //пустая начальная запись
+                Zapis_Vozduh last_zapis = new Zapis_Vozduh();
+
+                last_zapis.DAT = "00.00.0000 00:00:00";
+
+                DateTime date;
+                int j = 1;
+
+                List<Tabels_Models.Tab_1_6_1> _tab_1_6_1 = new();
+
+                foreach (Zapis_Vozduh zapis in SPISOK)
+                {
+                    vTabl_19.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    vTabl_19.PKM = zapis.PKM;
+                    //vTabl_19.k_razn = zapis.k_razn_nadd;
+                    vTabl_19.Pnadd_v = zapis.Pnadd;
+                    vTabl_19.sms = zapis.soob1;
+                    Tabl_19.Add(vTabl_19);
+                    j++;
+                    _tab_1_6_1.Add(new Tabels_Models.Tab_1_6_1(date.ToString("yyyy-MM-dd"), zapis.Pnadd, zapis.soob1));
+                }
+                               
+
+                string year16, month16, day16;
+                string dat_ot_new16, dat_do_new16;
+
+                dat_ot_new16 = dat_ot;
+                dat_do_new16 = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new16 + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new16 + " 23:59:59");
+
+                dannie = 0;     //проверка на наличие данных в основном/первом запросе
+
+                while (date_beg < date_end)
+                {
+                    SqlConnection Connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString);
+                    SqlCommand Command = Connection.CreateCommand();
+                    Command.CommandText = "with dates(DateTime,  [" + pPKM + "], [" + TLC + "], [" + TPC + "], [" + ChVKV + "], [" + Regim + "]) as ( " +
+                                          "select DISTINCT CAST(MeasDateTime as DateTime),[" + pPKM + "], [" + TLC + "], [" + TPC + "], [" + ChVKV + "], [" + Regim + "] " +
+                                          "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                                          "WHERE  [SectionID]= " + _section_id + " and ([" + pPKM + "]= 12 or [" + pPKM + "]= 13 or [" + pPKM + "]= 14 or [" + pPKM + "]= 15) and [" + ChVKV + "]>340 and [" + Regim + "]=5  " +
+                                          "and([" + TLC + "]>630) " +        //512
+                                          "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new16 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new16 + " 23:59:59', 102))), " +
+                                          "groups AS(  " +
+                                          "SELECT  " +
+                                          "ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
+                                          "dateadd(second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + pPKM + "], [" + TLC + "], [" + TPC + "], [" + ChVKV + "], [" + Regim + "] " +
+                                          "FROM dates d " +
+                                          "          )    " +
+                                          "SELECT " +
+                                          "top 1 COUNT(*) AS consecutiveDates, " +
+                                          "MIN(DateTime) AS minDate, " +
+                                          "MAX(DateTime) AS maxDate, " +
+                                          "([" + pPKM + "]) as PKM,  " +
+                                          "MAX([" + TLC + "]) as TLC,  " +
+                                          "MAX([" + TPC + "]) as TPC,  " +
+                                          "datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
+                                          "FROM   groups " +
+                                          "GROUP BY grp, " + pPKM + " " +
+                                          "ORDER BY 1 DESC, 2 DESC   ";
+                    Connection.Open();
+                    SqlDataReader reader31 = Command.ExecuteReader();
+
+                    if (reader31.HasRows) //проверка на содержание одной или несколько строк, есть ли данные
+                    {
+                        dannie = 1;
+                    }
+                    else
+                    {
+                        dannie = 0;
+                    }
+
+                    while ((reader31.Read()) && (dannie == 1))
+                    {
+                        zap_vozd.PKM = reader31["PKM"].ToString();
+                        zap_vozd.DAT = Convert.ToDateTime(reader31["MinDate"].ToString()).ToString();//дата
+                        zap_vozd.TLC = reader31["TLC"].ToString();
+                        if (Convert.ToDouble(zap_vozd.TLC) > 630)       //!!!!!!! поменять, должно быть 630
+                        {
+                            zap_vozd.soob2 = "Температура газов перед турбиной  выше нормы (левая сторона)";
+                            SPISOK.Add(zap_vozd);//количество записей
+                        }
+
+                        zap_vozd.soob2 = "";
+                    }
+
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year16 = date_beg.ToShortDateString().Remove(0, 6);
+                    month16 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day16 = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new16 = year16 + "." + month16 + "." + day16; // переводим в формат yyyymmdd для sql
+
+                    Connection.Close();
+
+                } //while (date_beg < date_end)
+
+                List<Tabels_Models.Tab_1_6_2> _tab_1_6_2 = new();
+
+                foreach (Zapis_Vozduh zapis in SPISOK)
+                {
+                    vTabl_19.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    vTabl_19.PKM = zapis.PKM;
+                    vTabl_19.T_lc = zapis.TLC;
+                    vTabl_19.sms = zapis.soob2;
+                    Tabl_19.Add(vTabl_19);
+                    j++;
+
+                    _tab_1_6_2.Add(new Tabels_Models.Tab_1_6_2(date.ToString("yyyy-MM-dd"), zapis.PKM, zapis.TLC, zapis.soob2));
+                }                               
+
+                string year17, month17, day17;
+                string dat_ot_new17, dat_do_new17;
+
+                dat_ot_new17 = dat_ot;
+                dat_do_new17 = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new17 + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new17 + " 23:59:59");
+
+                dannie = 0;     //проверка на наличие данных в основном/первом запросе
+
+                while (date_beg < date_end)
+                {
+                    SqlConnection Connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString);
+                    SqlCommand Command = Connection.CreateCommand();
+                    Command.CommandText = "with dates(DateTime,  [" + pPKM + "], [" + TLC + "], [" + TPC + "], [" + ChVKV + "], [" + Regim + "]) as ( " +
+                                          "select DISTINCT CAST(MeasDateTime as DateTime),[" + pPKM + "], [" + TLC + "], [" + TPC + "], [" + ChVKV + "], [" + Regim + "] " +
+                                          "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                                          "WHERE  [SectionID]= " + _section_id + " and ([" + pPKM + "]= 12 or [" + pPKM + "]= 13 or [" + pPKM + "]= 14 or [" + pPKM + "]= 15) and [" + ChVKV + "]>340 and [" + Regim + "]=5  " +
+                                          "and([" + TPC + "]>630) " +        //500
+                                          "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new17 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new17 + " 23:59:59', 102))), " +
+                                          "groups AS(  " +
+                                          "SELECT  " +
+                                          "ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
+                                          "dateadd(second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + pPKM + "], [" + TLC + "], [" + TPC + "], [" + ChVKV + "], [" + Regim + "] " +
+                                          "FROM dates d " +
+                                          "          )    " +
+                                          "SELECT " +
+                                          "top 1 COUNT(*) AS consecutiveDates, " +
+                                          "MIN(DateTime) AS minDate, " +
+                                          "MAX(DateTime) AS maxDate, " +
+                                          "([" + pPKM + "]) as PKM,  " +
+                                          "MAX([" + TLC + "]) as TLC,  " +
+                                          "MAX([" + TPC + "]) as TPC,  " +
+                                          "datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
+                                          "FROM   groups " +
+                                          "GROUP BY grp, " + pPKM + " " +
+                                          "ORDER BY 1 DESC, 2 DESC   ";
+                    Connection.Open();
+                    SqlDataReader reader32 = Command.ExecuteReader();
+
+                    if (reader32.HasRows) //проверка на содержание одной или несколько строк, есть ли данные
+                    {
+                        dannie = 1;
+                    }
+                    else
+                    {
+                        dannie = 0;
+                    }
+
+                    while ((reader32.Read()) && (dannie == 1))
+                    {
+                        zap_vozd.PKM = reader32["PKM"].ToString();
+                        zap_vozd.DAT = Convert.ToDateTime(reader32["MinDate"].ToString()).ToString();//дата
+                        zap_vozd.TPC = reader32["TPC"].ToString();
+                        if (Convert.ToDouble(zap_vozd.TPC) > 630)           //!!!!!!! поменять, должно быть 630
+                        {
+                            zap_vozd.soob3 = "Температура газов перед турбиной  выше нормы (правая сторона)";
+                            SPISOK.Add(zap_vozd);//количество записей
+                        }
+                        zap_vozd.soob3 = "";
+                    }
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year17 = date_beg.ToShortDateString().Remove(0, 6);
+                    month17 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day17 = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new17 = year17 + "." + month17 + "." + day17; // переводим в формат yyyymmdd для sql
+
+                    Connection.Close();
+
+                } //while (date_beg < date_end)
+
+                List<Tabels_Models.Tab_1_6_3> _tab_1_6_3 = new();
+
+                foreach (Zapis_Vozduh zapis in SPISOK)
+                {
+                    vTabl_19.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    vTabl_19.PKM = zapis.PKM;
+                    vTabl_19.T_pc = zapis.TPC;
+                    vTabl_19.sms = zapis.soob3;
+                    Tabl_19.Add(vTabl_19);
+                    j++;
+                    _tab_1_6_3.Add(new Tabels_Models.Tab_1_6_3(date.ToString("yyyy-MM-dd"), zapis.PKM, zapis.TLC, zapis.soob3));
+
+                }
+
+                string year18, month18, day18;
+                string dat_ot_new18, dat_do_new18;
+
+                dat_ot_new18 = dat_ot;
+                dat_do_new18 = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new18 + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new18 + " 23:59:59");
+
+                string pkm_ot, pkm_do, pkm_ot_fix;
+                string pkm_ot_max;
+
+                double ChVKV_min, ChVKV_max, ChVKV_delta;
+
+                DateTime DT, DT_min, DT_max, DT_delta;
+
+                String DT_delta_time, DT_delta_hh, DT_delta_mm, DT_delta_ss;
+                string time_perekl;
+
+
+                byte kol_pkm;
+
+                DT_min = DateTime.Now;
+                DT_max = DateTime.Now;
+                ChVKV_min = 0;
+                ChVKV_max = 1;
+
+                while (date_beg < date_end)
+                {
+                    SqlConnection Connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString);
+                    SqlCommand Command = Connection.CreateCommand();
+                    Command.CommandText = "select MAX([" + pPKM + "]) as PKM_max " +
+                                          "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                                          "WHERE [SectionID] =" + _section_id + " and [" + pPKM + "] between 10 and 15 " +
+                                          "and [" + ChVRTk + "] > 300 " +
+                                          "and MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new18 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new18 + " 23:59:59', 102) ";
+                    Connection.Open();
+                    SqlDataReader reader33 = Command.ExecuteReader();
+
+                    kol_pkm = 0;
+
+
+                    if ((reader33.Read()) && (reader33["PKM_max"].ToString() != ""))
+                    {
+                        pkm_ot_max = reader33["PKM_max"].ToString();
+                    }
+                    else
+                    {
+                        date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                        year18 = date_beg.ToShortDateString().Remove(0, 6);
+                        month18 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                        day18 = date_beg.ToShortDateString().Remove(2);
+                        dat_ot_new18 = year18 + "." + month18 + "." + day18; // переводим в формат yyyymmdd для sql
+
+                        continue;
+                    }
+
+                    Connection.Close();
+
+                    Command.CommandText = "with dates(DateTime, [" + pPKM + "], [" + ChVRTk + "], rn_data) as ( " +
+                                          "select DISTINCT CAST(MeasDateTime as DateTime),[" + pPKM + "], [" + ChVRTk + "], " +
+                                          "ROW_NUMBER()OVER(ORDER BY MeasDateTime) AS rn_data " +
+                                          "FROM [diag_lcm].[Res].[_" + _tablica + "] " +
+                                          "WHERE [SectionID] = " + _section_id + " and [" + pPKM + "] between 1 and 15 " +
+                                          "and [" + ChVRTk + "] > 300 " +
+                                          "and (MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new18 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new18 + " 23:59:59', 102))) " +
+                                          "select d1.rn_data,d1.DateTime,d1.[" + pPKM + "] as pkm1,d2.[" + pPKM + "] as pkm2,(d1.[" + pPKM + "] - d2.[" + pPKM + "]) as res ,d1.[" + ChVRTk + "] as ChVKV " +
+                                          "from dates d1 " +
+                                          "join dates d2 on d1.rn_data = d2.rn_data - 1 " +
+                                          "where (d1.[" + pPKM + "] > d2.[" + pPKM + "])";
+
+                    Connection.Open();
+                    Command.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                    SqlDataReader reader34 = Command.ExecuteReader();
+                    while (reader34.Read())
+                    {
+                        pkm_ot = reader34["pkm1"].ToString();
+                        pkm_do = reader34["pkm2"].ToString();
+                        DT = Convert.ToDateTime(reader34["DateTime"].ToString());
+                        pkm_ot_fix = reader34["pkm1"].ToString();
+
+                        if (Convert.ToInt32(pkm_ot) == Convert.ToInt32(pkm_ot_max))
+                        {
+                            kol_pkm = 1;         //количество позиций непрерывного переключения
+                            DT_min = Convert.ToDateTime(reader34["DateTime"].ToString());
+                            ChVKV_min = Convert.ToDouble(reader34["ChVKV"].ToString());
+
+
+                            while ((Convert.ToInt32(reader34["res"].ToString()) == 1) && (reader34.Read()))
+                            {
+
+                                pkm_ot = reader34["pkm1"].ToString();
+                                pkm_do = reader34["pkm2"].ToString();
+                                DT = Convert.ToDateTime(reader34["DateTime"].ToString());
+
+                                if (Convert.ToInt32(pkm_ot) == Convert.ToInt32(pkm_ot_max))
+                                {
+                                    kol_pkm = 1;
+                                    DT_min = Convert.ToDateTime(reader34["DateTime"].ToString());
+                                    ChVKV_min = Convert.ToDouble(reader34["ChVKV"].ToString());
+                                }
+
+                                if ((Convert.ToInt32(reader34["pkm1"].ToString())) < (Convert.ToInt32(pkm_ot_max)) && (Convert.ToInt32(pkm_ot_fix) - Convert.ToInt32(pkm_ot) == 1))
+                                {
+                                    kol_pkm++;
+                                    DT_max = Convert.ToDateTime(reader34["DateTime"].ToString());
+                                    ChVKV_max = Convert.ToDouble(reader34["ChVKV"].ToString());
+                                    pkm_ot_fix = pkm_ot;
+                                }
+                            }
+                        }
+                        //  DT_max = Convert.ToDateTime(reader34["DateTime"].ToString());
+                        // ChVKV_max = Convert.ToDouble(reader34["ChVKV"].ToString());
+
+                        if ((kol_pkm > 9 && kol_pkm < 16) && (kol_pkm <= Convert.ToByte(pkm_ot_max)))
+                        {
+
+                            DT_delta = new DateTime(DT_max.Subtract(DT_min).Ticks);  //разница между двумя датами
+
+                            DT_delta_time = DT_delta.ToLongTimeString();
+
+                            DT_delta_hh = Convert.ToString(Convert.ToDateTime(DT_delta_time).Hour);
+                            DT_delta_mm = Convert.ToString(Convert.ToDateTime(DT_delta_time).Minute);
+                            DT_delta_ss = Convert.ToString(Convert.ToDateTime(DT_delta_time).Second);
+
+                            time_perekl = Convert.ToString(Convert.ToInt32(DT_delta_hh) * 24 * 60 + Convert.ToInt32(DT_delta_mm) * 60 + Convert.ToInt32(DT_delta_ss));//перевод в секунды
+
+                            zap_vozd.DAT = Convert.ToDateTime(DT_max).ToString();//дата
+
+                            if (Convert.ToInt32(time_perekl) < 200)
+                            {
+                                zap_vozd.soob4 = "Необходима ревизия подшипникового узла турбокомпрессора дизеля";
+                                SPISOK.Add(zap_vozd);//количество записей
+                            }
+
+                            if (Convert.ToInt32(ChVKV_min) < 510)           //нужно добавить для вывода
+                            {
+                                zap_vozd.soob5 = "Частота вращения ротора снизилась до 500 об/мин.";
+                                SPISOK.Add(zap_vozd);//количество записей
+                            }
+
+                            kol_pkm = 0;            //обнуляем последовательность пкм
+
+                            // continue;
+                        }
+                    }
+
+                    zap_vozd.soob4 = "";
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year18 = date_beg.ToShortDateString().Remove(0, 6);
+                    month18 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day18 = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new18 = year18 + "." + month18 + "." + day18; // переводим в формат yyyymmdd для sql
+
+                    Connection.Close();
+
+                } //while (date_beg < date_end)
+
+
+                List<Tabels_Models.Tab_1_6_4> _tab_1_6_4 = new();
+
+                foreach (Zapis_Vozduh zapis in SPISOK)
+                {
+                    vTabl_19.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+                    vTabl_19.sms = zapis.soob4;
+                    Tabl_19.Add(vTabl_19);
+                    j++;
+                    _tab_1_6_4.Add(new Tabels_Models.Tab_1_6_4(date.ToString("yyyy-MM-dd"), zapis.soob4));
+                }
+                
+                //в самом конце сброс флага наличия ошибки
+                t_1_6.ERR = false;
+            }
+            catch (Exception ex)//если же возникла ошибка
+            {
+                t_1_6.ERR = true;
+                t_1_6.ERR_Message = ex.Message;
+            }
+            finally //в любом случае 
+            {
+                //можно например логировать событие    
+            }
+            return (t_1_6);
+        }
+        public Diag_result<Tabels_Models.Tab_1_7> Algoritm_1_7()
+        {
+            Diag_result<Tabels_Models.Tab_1_7> t_1_7 = new Diag_result<Tabels_Models.Tab_1_7>();
+            try
+            {
+
+                //t_1_6.Table.Add(new Tabels_Models.Tab_1_2(date.ToString("yyyy-MM-dd HH-mm-ss"), mTabl_1_2.sms, zapis.T_mas));
+
+
+                //в самом конце сброс флага наличия ошибки
+                t_1_7.ERR = false;
+            }
+            catch (Exception ex)//если же возникла ошибка
+            {
+                t_1_7.ERR = true;
+                t_1_7.ERR_Message = ex.Message;
+            }
+            finally //в любом случае 
+            {
+                //можно например логировать событие    
+            }
+            return (t_1_7);
+        }
+        //кислотная аккумуляторная батарея БС
+        public Diag_result<Tabels_Models.Tab_1_8> Algoritm_1_8()
+        {
+            Diag_result<Tabels_Models.Tab_1_8> t_1_8 = new Diag_result<Tabels_Models.Tab_1_8>();
+            try
+            {
+                //выполнение алгоритма
+                //...............
+                DateTime date_beg, date_end;
+
+                string I_SG = "", U_AB = "", Regim = "", T_okr_sr = "", KD_on = "", KD_off = "";
+
+                switch (_tablica)
+                {
+                    case "MSU_BS215":
+                        I_SG = "Analog_32"; U_AB = "Analog_35"; Regim = "Analog_174"; T_okr_sr = "Analog_145";
+                        KD_on = "DiscrIn_18"; KD_off = "DiscrOut_17";
+                        break;
+                    default:
+                        break;
+                }
+
+                string year16, month16, day16;
+                string dat_ot_new16, dat_do_new16;
+
+                dat_ot_new16 = dat_ot;
+                dat_do_new16 = dat_do;
+
+                date_beg = Convert.ToDateTime(dat_ot_new16 + " 00:00:00");
+                date_end = Convert.ToDateTime(dat_do_new16 + " 23:59:59");
+
+                double I_SG_sum, U_Akk_sum, I_kv_sum, pr_IU, T_OkrSr, kol_izm;
+                double K, C, C_ab, T_vozd;
+
+                List<Zapis_Akkum_batar_BS> SPISOK = new List<Zapis_Akkum_batar_BS>();
+                long i = 0;
+                Zapis_Akkum_batar_BS zap_Akk_batar_BS = new Zapis_Akkum_batar_BS();
+
+                while (date_beg < date_end)
+                {
+                    C = 0;
+
+                    SqlConnection Connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString);
+                    SqlCommand Command = Connection.CreateCommand();
+                    Command.CommandText = "with dates(DateTime,[" + I_SG + "], [" + U_AB + "], [" + Regim + "], [" + T_okr_sr + "],  [" + KD_on + "], [" + KD_off + "]) as ( " +
+                                          " select DISTINCT CAST(MeasDateTime as DateTime),[" + I_SG + "], [" + U_AB + "], [" + Regim + "], [" + T_okr_sr + "],  [" + KD_on + "], [" + KD_off + "] " +
+                                          " FROM[diag_lcm].[Res].[_" + _tablica + "]" +
+                                          " WHERE([SectionID]= " + _section_id + " and [" + Regim + "]= 2  and [" + I_SG + "] between 100 and 1500 " +
+                                          " and MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new16 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new16 + " 23:59:59', 102)) ) " +
+                                          "  ,       " +
+                                          " groups AS " +
+                                          "  ( " +
+                                          " SELECT " +
+                                          " ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
+                                          " dateadd(second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + I_SG + "], [" + U_AB + "], [" + Regim + "], [" + T_okr_sr + "],  [" + KD_on + "], [" + KD_off + "] " +
+                                          " FROM dates d " +
+                                          " ) , " +
+                                          " tabl as( " +
+                                          " SELECT " +
+                                          " MIN(DateTime) AS minDate, " +
+                                          " MAX(DateTime) AS maxDate, " +
+                                          " SUM([" + I_SG + "]) as I_SG_sum, " +
+                                          " SUM([" + U_AB + "]) as U_Akk_sum,  " +
+                                          " SUM(Convert(Float, [" + I_SG + "]) * Convert(Float, [" + I_SG + "])) as I_kv_sum,  " +
+                                          " SUM(Convert(Float, [" + I_SG + "]) * Convert(Float, [" + U_AB + "])) as pr_IU,  " +
+                                          " SUM([" + T_okr_sr + "]) as T_OkrSr, " +
+                                          " datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
+                                          " FROM   groups " +
+                                          " GROUP BY grp " +
+                                          " ) " +
+                                          " select* " +
+                                          " from tabl " +
+                                          " where int_sec>=2 " +
+                                          " order by  2,3 desc ";
+                    Connection.Open();
+                    Command.CommandTimeout = 600; //увеличение время выполнения запроса сек
+                    SqlDataReader reader31 = Command.ExecuteReader();
+
+                    while (reader31.Read())
+                    //   {***}
+                    {
+                        zap_Akk_batar_BS.DAT = reader31["minDate"].ToString();//дата
+                        zap_Akk_batar_BS.I_SG_sum = reader31["I_SG_sum"].ToString();
+                        zap_Akk_batar_BS.U_AB_sum = reader31["U_Akk_sum"].ToString();
+                        zap_Akk_batar_BS.I_kv_sum = reader31["I_kv_sum"].ToString();
+                        zap_Akk_batar_BS.pr_IU = reader31["pr_IU"].ToString();
+                        zap_Akk_batar_BS.T_OkrSr = reader31["T_OkrSr"].ToString();
+                        zap_Akk_batar_BS.kol_izm = reader31["int_sec"].ToString();
+
+                        I_SG_sum = Convert.ToDouble(zap_Akk_batar_BS.I_SG_sum);
+                        U_Akk_sum = Convert.ToDouble(zap_Akk_batar_BS.U_AB_sum);
+                        I_kv_sum = Convert.ToDouble(zap_Akk_batar_BS.I_kv_sum);
+                        pr_IU = Convert.ToDouble(zap_Akk_batar_BS.pr_IU);
+                        T_OkrSr = Convert.ToDouble(zap_Akk_batar_BS.T_OkrSr);
+                        kol_izm = Convert.ToDouble(zap_Akk_batar_BS.kol_izm) + 1;
+
+                        //рассчеты для вывода
+                        K = Math.Round((U_Akk_sum * I_SG_sum - kol_izm * pr_IU) / (kol_izm * I_kv_sum - I_SG_sum * I_SG_sum), 3);
+                        //  E = Math.Round((U_Akk_sum + R * I_SG_sum) / kol_izm, 3);
+
+                        C = Math.Round(50 + 50 * ((0.0312 - K) / (0.0312 - 0.0232)));
+                        //C = Math.Abs(Math.Round(100 - ((R - 0.024) / 0.024) * 250, 1));
+                        T_vozd = T_OkrSr / kol_izm;
+
+                        C_ab = Math.Round(C / (1 + 0.01 * (T_vozd - 20)));
+
+                        zap_Akk_batar_BS.K = Convert.ToString(K);
+                        zap_Akk_batar_BS.C = Convert.ToString(C);
+                        zap_Akk_batar_BS.C_ab = Convert.ToString(C_ab);
+
+                        zap_Akk_batar_BS.T_vozd = Convert.ToString(T_vozd);
+                        //     zap_Akk_batar.E_procent = Convert.ToString(E_procent);
+
+                        SPISOK.Add(zap_Akk_batar_BS);//количество записей
+
+                    }//  {***}
+
+                    Connection.Close();
+
+                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
+
+                    year16 = date_beg.ToShortDateString().Remove(0, 6);
+                    month16 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
+                    day16 = date_beg.ToShortDateString().Remove(2);
+                    dat_ot_new16 = year16 + "." + month16 + "." + day16; // переводим в формат yyyymmdd для sql
+
+                } //while (date_beg < date_end)   {***}
+
+                List<Tabl_Akk_bat_BS> Tabl_20 = new List<Tabl_Akk_bat_BS>();//таблица
+                Tabl_Akk_bat_BS AkBTabl_20 = new Tabl_Akk_bat_BS();//запись таблицы
+                                                                   //пустая начальная запись
+                Zapis_Akkum_batar_BS last_zapis = new Zapis_Akkum_batar_BS();
+
+                last_zapis.DAT = "00.00.0000 00:00:00";
+
+                DateTime date;
+
+                int j = 1;
+
+                foreach (Zapis_Akkum_batar_BS zapis in SPISOK)
+                {
+                    AkBTabl_20.datatime = zapis.DAT;
+                    DateTime.TryParse(zapis.DAT, out date);
+
+                    AkBTabl_20.K = zapis.K;
+                    AkBTabl_20.C = zapis.C;
+                    AkBTabl_20.C_ab = zapis.C_ab;
+                    AkBTabl_20.Temp = zapis.T_vozd;
+
+
+
+                    //if (Convert.ToDouble(zapis.razbrosI1_8) > Convert.ToDouble(Ited1_spr))                //данные для отчета-шаблона  
+                    //{
+                    //    Ited1_spr_zapis = zapis.razbrosI1_8;
+                    //    Ited1_spr = Ited1_spr_zapis;
+                    //    Ited2_spr_zapis = zapis.razbrosI2_8;
+                    //    Ited3_spr_zapis = zapis.razbrosI3_8;
+                    //    Ited4_spr_zapis = zapis.razbrosI4_8;
+                    //    Ited5_spr_zapis = zapis.razbrosI5_8;
+                    //    Ited6_spr_zapis = zapis.razbrosI6_8;
+                    //    data_zapis = zapis.DAT;
+                    //после изменения таблицы выводим одно значение вместо 6
+                    //}
+                    Tabl_20.Add(AkBTabl_20);
+                    j++;
+
+                    #region Данные для отчета (таблица 5_3)
+                    //t_6_1.Table.Add(new Tabels_Models.Tab_6_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.T_vozd, zapis.R, zapis.E, zapis.C_nom, zapis.C, zapis.E_procent));
+                    t_1_8.Table.Add(new Tabels_Models.Tab_1_8(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.T_vozd, zapis.K, zapis.C, zapis.C_ab));
+                    #endregion
+                }
+                //в самом конце сброс флага наличия ошибки
+                t_1_8.ERR = false;
+            }
+            catch (Exception ex)//если же возникла ошибка
+            {
+                t_1_8.ERR = true;
+                t_1_8.ERR_Message = ex.Message;
+            }
+            finally //в любом случае 
+            {
+                //можно например логировать событие    
+            }
+            return (t_1_8);
+        }
+
         public List<Tabels_Models.GroupSmsModel> Algoritm_2_0()
         {
             List<Tabels_Models.GroupSmsModel> GroupSms = new List<Tabels_Models.GroupSmsModel>();
@@ -3973,199 +5613,8 @@ namespace Classes
             }
             return (t_6_1);
         }
-        //кислотная аккумуляторная батарея БС
-        public Diag_result<Tabels_Models.Tab_1_8> Algoritm_1_8()
-        {
-            Diag_result<Tabels_Models.Tab_1_8> t_1_8 = new Diag_result<Tabels_Models.Tab_1_8>();
-            try
-            {
-                //выполнение алгоритма
-                //...............
-                DateTime date_beg, date_end;
+        
 
-                string I_SG = "", U_AB = "", Regim = "", T_okr_sr = "", KD_on = "", KD_off = "";
-
-                switch (_tablica)
-                {
-                    case "MSU_BS215":
-                        I_SG = "Analog_32"; U_AB = "Analog_35"; Regim = "Analog_174"; T_okr_sr = "Analog_145";
-                        KD_on = "DiscrIn_18"; KD_off = "DiscrOut_17";
-                        break;
-                    default:
-                        break;
-                }
-
-                string year16, month16, day16;
-                string dat_ot_new16, dat_do_new16;
-
-                dat_ot_new16 = dat_ot;
-                dat_do_new16 = dat_do;
-
-                date_beg = Convert.ToDateTime(dat_ot_new16 + " 00:00:00");
-                date_end = Convert.ToDateTime(dat_do_new16 + " 23:59:59");
-
-                double I_SG_sum, U_Akk_sum, I_kv_sum, pr_IU, T_OkrSr, kol_izm;
-                double K, C, C_ab, T_vozd;
-
-                List<Zapis_Akkum_batar_BS> SPISOK = new List<Zapis_Akkum_batar_BS>();
-                long i = 0;
-                Zapis_Akkum_batar_BS zap_Akk_batar_BS = new Zapis_Akkum_batar_BS();
-
-                while (date_beg < date_end)
-                {
-                    C = 0;
-
-                    SqlConnection Connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString);
-                    SqlCommand Command = Connection.CreateCommand();
-                    Command.CommandText = "with dates(DateTime,[" + I_SG + "], [" + U_AB + "], [" + Regim + "], [" + T_okr_sr + "],  [" + KD_on + "], [" + KD_off + "]) as ( " +
-                                          " select DISTINCT CAST(MeasDateTime as DateTime),[" + I_SG + "], [" + U_AB + "], [" + Regim + "], [" + T_okr_sr + "],  [" + KD_on + "], [" + KD_off + "] " +
-                                          " FROM[diag_lcm].[Res].[_" + _tablica + "]" +
-                                          " WHERE([SectionID]= " + _section_id + " and [" + Regim + "]= 2  and [" + I_SG + "] between 100 and 1500 " +
-                                          " and MeasDateTime BETWEEN CONVERT(DATETIME, '" + dat_ot_new16 + " 00:00:00', 102) AND CONVERT(DATETIME, '" + dat_ot_new16 + " 23:59:59', 102)) ) " +
-                                          "  ,       " +
-                                          " groups AS " +
-                                          "  ( " +
-                                          " SELECT " +
-                                          " ROW_NUMBER() OVER (ORDER BY DateTime) AS rn, " +
-                                          " dateadd(second, -ROW_NUMBER() OVER(ORDER BY DateTime), DateTime) AS grp, DateTime, [" + I_SG + "], [" + U_AB + "], [" + Regim + "], [" + T_okr_sr + "],  [" + KD_on + "], [" + KD_off + "] " +
-                                          " FROM dates d " +
-                                          " ) , " +
-                                          " tabl as( " +
-                                          " SELECT " +
-                                          " MIN(DateTime) AS minDate, " +
-                                          " MAX(DateTime) AS maxDate, " +
-                                          " SUM([" + I_SG + "]) as I_SG_sum, " +
-                                          " SUM([" + U_AB + "]) as U_Akk_sum,  " +
-                                          " SUM(Convert(Float, [" + I_SG + "]) * Convert(Float, [" + I_SG + "])) as I_kv_sum,  " +
-                                          " SUM(Convert(Float, [" + I_SG + "]) * Convert(Float, [" + U_AB + "])) as pr_IU,  " +
-                                          " SUM([" + T_okr_sr + "]) as T_OkrSr, " +
-                                          " datediff(SECOND, MIN(DateTime), MAX(DateTime)) as int_sec " +
-                                          " FROM   groups " +
-                                          " GROUP BY grp " +
-                                          " ) " +
-                                          " select* " +
-                                          " from tabl " +
-                                          " where int_sec>=2 " +
-                                          " order by  2,3 desc ";
-                    Connection.Open();
-                    Command.CommandTimeout = 600; //увеличение время выполнения запроса сек
-                    SqlDataReader reader31 = Command.ExecuteReader();
-
-                    while (reader31.Read())
-                    //   {***}
-                    {
-                        zap_Akk_batar_BS.DAT = reader31["minDate"].ToString();//дата
-                        zap_Akk_batar_BS.I_SG_sum = reader31["I_SG_sum"].ToString();
-                        zap_Akk_batar_BS.U_AB_sum = reader31["U_Akk_sum"].ToString();
-                        zap_Akk_batar_BS.I_kv_sum = reader31["I_kv_sum"].ToString();
-                        zap_Akk_batar_BS.pr_IU = reader31["pr_IU"].ToString();
-                        zap_Akk_batar_BS.T_OkrSr = reader31["T_OkrSr"].ToString();
-                        zap_Akk_batar_BS.kol_izm = reader31["int_sec"].ToString();
-
-                        I_SG_sum = Convert.ToDouble(zap_Akk_batar_BS.I_SG_sum);
-                        U_Akk_sum = Convert.ToDouble(zap_Akk_batar_BS.U_AB_sum);
-                        I_kv_sum = Convert.ToDouble(zap_Akk_batar_BS.I_kv_sum);
-                        pr_IU = Convert.ToDouble(zap_Akk_batar_BS.pr_IU);
-                        T_OkrSr = Convert.ToDouble(zap_Akk_batar_BS.T_OkrSr);
-                        kol_izm = Convert.ToDouble(zap_Akk_batar_BS.kol_izm) + 1;
-
-                        //рассчеты для вывода
-                        K = Math.Round((U_Akk_sum * I_SG_sum - kol_izm * pr_IU) / (kol_izm * I_kv_sum - I_SG_sum * I_SG_sum), 3);
-                        //  E = Math.Round((U_Akk_sum + R * I_SG_sum) / kol_izm, 3);
-
-                        C = Math.Round(50 + 50 * ((0.0312 - K) / (0.0312 - 0.0232)));
-                        //C = Math.Abs(Math.Round(100 - ((R - 0.024) / 0.024) * 250, 1));
-                        T_vozd = T_OkrSr / kol_izm;
-
-                        C_ab = Math.Round(C / (1 + 0.01 * (T_vozd - 20)));
-
-                        zap_Akk_batar_BS.K = Convert.ToString(K);
-                        zap_Akk_batar_BS.C = Convert.ToString(C);
-                        zap_Akk_batar_BS.C_ab = Convert.ToString(C_ab);
-
-                        zap_Akk_batar_BS.T_vozd = Convert.ToString(T_vozd);
-                        //     zap_Akk_batar.E_procent = Convert.ToString(E_procent);
-
-                        SPISOK.Add(zap_Akk_batar_BS);//количество записей
-
-                    }//  {***}
-
-                    Connection.Close();
-
-                    date_beg = date_beg.AddDays(1); //прибавляем сутки для sql
-
-                    year16 = date_beg.ToShortDateString().Remove(0, 6);
-                    month16 = date_beg.ToShortDateString().Remove(0, 3).Remove(2);
-                    day16 = date_beg.ToShortDateString().Remove(2);
-                    dat_ot_new16 = year16 + "." + month16 + "." + day16; // переводим в формат yyyymmdd для sql
-
-                } //while (date_beg < date_end)   {***}
-
-                List<Tabl_Akk_bat_BS> Tabl_20 = new List<Tabl_Akk_bat_BS>();//таблица
-                Tabl_Akk_bat_BS AkBTabl_20 = new Tabl_Akk_bat_BS();//запись таблицы
-                                                                   //пустая начальная запись
-                Zapis_Akkum_batar_BS last_zapis = new Zapis_Akkum_batar_BS();
-
-                last_zapis.DAT = "00.00.0000 00:00:00";
-
-                DateTime date;
-
-                int j = 1;
-
-                foreach (Zapis_Akkum_batar_BS zapis in SPISOK)
-                {
-                    AkBTabl_20.datatime = zapis.DAT;
-                    DateTime.TryParse(zapis.DAT, out date);
-
-                    AkBTabl_20.K = zapis.K;
-                    AkBTabl_20.C = zapis.C;
-                    AkBTabl_20.C_ab = zapis.C_ab;
-                    AkBTabl_20.Temp = zapis.T_vozd;
-
-
-
-                    //if (Convert.ToDouble(zapis.razbrosI1_8) > Convert.ToDouble(Ited1_spr))                //данные для отчета-шаблона  
-                    //{
-                    //    Ited1_spr_zapis = zapis.razbrosI1_8;
-                    //    Ited1_spr = Ited1_spr_zapis;
-                    //    Ited2_spr_zapis = zapis.razbrosI2_8;
-                    //    Ited3_spr_zapis = zapis.razbrosI3_8;
-                    //    Ited4_spr_zapis = zapis.razbrosI4_8;
-                    //    Ited5_spr_zapis = zapis.razbrosI5_8;
-                    //    Ited6_spr_zapis = zapis.razbrosI6_8;
-                    //    data_zapis = zapis.DAT;
-                    //после изменения таблицы выводим одно значение вместо 6
-                    //}
-                    Tabl_20.Add(AkBTabl_20);
-                    j++;
-
-                    #region Данные для отчета (таблица 5_3)
-                    //t_6_1.Table.Add(new Tabels_Models.Tab_6_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.T_vozd, zapis.R, zapis.E, zapis.C_nom, zapis.C, zapis.E_procent));
-                    t_1_8.Table.Add(new Tabels_Models.Tab_1_8(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.T_vozd, zapis.K, zapis.C, zapis.C_ab));
-                    #endregion
-                }
-                //в самом конце сброс флага наличия ошибки
-                t_1_8.ERR = false;
-            }
-            catch (Exception ex)//если же возникла ошибка
-            {
-                t_1_8.ERR = true;
-                t_1_8.ERR_Message = ex.Message;
-            }
-            finally //в любом случае 
-            {
-                //можно например логировать событие    
-            }
-            return (t_1_8);
-        }
-        //кислотная аккумуляторная батарея БС
-
-
-        //добавить алгоритмы 1-7
-        public void Algoritm_1_3()
-        {
-
-        }
-
+        
     }
 }

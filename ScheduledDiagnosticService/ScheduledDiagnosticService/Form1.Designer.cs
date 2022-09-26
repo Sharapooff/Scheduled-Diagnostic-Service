@@ -73,16 +73,16 @@
             // 
             // logRichTextBox
             // 
-            this.logRichTextBox.Location = new System.Drawing.Point(12, 184);
+            this.logRichTextBox.Location = new System.Drawing.Point(12, 111);
             this.logRichTextBox.Name = "logRichTextBox";
-            this.logRichTextBox.Size = new System.Drawing.Size(666, 170);
+            this.logRichTextBox.Size = new System.Drawing.Size(666, 156);
             this.logRichTextBox.TabIndex = 5;
             this.logRichTextBox.Text = "";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 166);
+            this.label4.Location = new System.Drawing.Point(18, 93);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(83, 15);
             this.label4.TabIndex = 6;
@@ -90,11 +90,11 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(169, 128);
+            this.button2.Location = new System.Drawing.Point(12, 61);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.Size = new System.Drawing.Size(179, 23);
             this.button2.TabIndex = 7;
-            this.button2.Text = "button2";
+            this.button2.Text = "run once service";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -102,7 +102,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(690, 366);
+            this.ClientSize = new System.Drawing.Size(690, 279);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.logRichTextBox);

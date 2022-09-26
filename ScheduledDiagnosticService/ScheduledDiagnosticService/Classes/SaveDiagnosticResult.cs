@@ -20,13 +20,13 @@ namespace ScheduledDiagnosticService.Classes
             Result _result = new Result { ERR = false, ERR_Message = "" };
             using (DiagServiceContext db = new DiagServiceContext(ConnectionString))
             {
-
                 var algoritms = await db.Algoritms.ToListAsync();
+                DateTime _DiagDT = DateTime.Now;
                 foreach (Algoritm a in algoritms)
                 {
                     JavaScriptSerializer serializer = new();//Создаем объект сериализации
                     ScheduledDiagnosticService.Models.DataBase.Incident incident = new(); //объект инцидента
-                    incident.DiagDT = DateTime.Now; //дата определения инцидента
+                    incident.DiagDT = _DiagDT;
                     foreach (var s in from p in db.Sections where p.RefID == sectionId select p.Id)
                         incident.SectionId = s;
                     switch (a.Notation)

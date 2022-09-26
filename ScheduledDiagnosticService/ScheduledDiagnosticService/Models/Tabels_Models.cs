@@ -149,7 +149,7 @@ namespace Models
             public List<Tab_1_6_4> Tab_1_6_4 { get; set; }
             public Tab_1_6()
             {
-                Tab_1_6_1 = new List<Tab_1_6_1>();
+                Tab_1_6_1 = new();
                 Tab_1_6_2 = new();
                 Tab_1_6_3 = new();
                 Tab_1_6_4 = new();
@@ -414,30 +414,23 @@ namespace Models
 
         }
 
+        //////////////////////////////
+
         public class Tab_3_1
         {
-            public string Date_Time { get; set; }
-            public string PCM { get; set; }
-            public string Power { get; set; }
-            public string d_T_water_out_diz { get; set; }
-            public string d_T_water_cold_loop { get; set; }
-            public string T_environment { get; set; }
-            public string Period { get; set; }
-
+            public List<Tab_3_1_1> Tab_3_1_1 { get; set; }
+            public List<Tab_3_1_2> Tab_3_1_2 { get; set; }
             public Tab_3_1()
-            { }
-
-            public Tab_3_1(string _Date_Time, string _PCM, string _Power, string _d_T_water_out_diz, string _d_T_water_cold_loop, string _T_environment, string _Period)
             {
-                Date_Time = _Date_Time;
-                PCM = _PCM;
-                Power = _Power;
-                d_T_water_out_diz = _d_T_water_out_diz;
-                d_T_water_cold_loop = _d_T_water_cold_loop;
-                T_environment = _T_environment;
-                Period = _Period;
+                Tab_3_1_1 = new();
+                Tab_3_1_2 = new();
             }
 
+            public Tab_3_1(List<Tab_3_1_1> _t_3_1_1, List<Tab_3_1_2> _t_3_1_2)
+            {
+                Tab_3_1_1 = _t_3_1_1;
+                Tab_3_1_2 = _t_3_1_2;
+            }
         }
         public class Tab_3_1_1
         {
@@ -464,6 +457,34 @@ namespace Models
             }
 
         }
+        public class Tab_3_1_2
+        {
+            public string Date_Time { get; set; }
+            public string PCM { get; set; }
+            public string Power { get; set; }
+            public string d_T_water_out_diz { get; set; }
+            public string d_T_water_cold_loop { get; set; }
+            public string T_environment { get; set; }
+            public string Period { get; set; }
+
+            public Tab_3_1_2()
+            { }
+
+            public Tab_3_1_2(string _Date_Time, string _PCM, string _Power, string _d_T_water_out_diz, string _d_T_water_cold_loop, string _T_environment, string _Period)
+            {
+                Date_Time = _Date_Time;
+                PCM = _PCM;
+                Power = _Power;
+                d_T_water_out_diz = _d_T_water_out_diz;
+                d_T_water_cold_loop = _d_T_water_cold_loop;
+                T_environment = _T_environment;
+                Period = _Period;
+            }
+
+        }
+
+
+        //////////////////////////////
 
         public class Tab_4_1
         {
@@ -506,6 +527,23 @@ namespace Models
 
         public class Tab_5_1
         {
+            public List<Tab_5_1_1> Tab_5_1_1 { get; set; }
+            public List<Tab_5_1_2> Tab_5_1_2 { get; set; }
+            public Tab_5_1()
+            {
+                Tab_5_1_1 = new();
+                Tab_5_1_2 = new();
+            }
+
+            public Tab_5_1(List<Tab_5_1_1> _t_5_1_1, List<Tab_5_1_2> _t_5_1_2)
+            {
+                Tab_5_1_1 = _t_5_1_1;
+                Tab_5_1_2 = _t_5_1_2;
+            }
+        }
+
+        public class Tab_5_1_1
+        {
             public string Date_Time { get; set; }
             public string PCM { get; set; }
             public string I1 { get; set; }
@@ -515,10 +553,10 @@ namespace Models
             public string I5 { get; set; }
             public string I6 { get; set; }
 
-            public Tab_5_1()
+            public Tab_5_1_1()
             { }
 
-            public Tab_5_1(string _Date_Time, string _PCM, string _I1, string _I2, string _I3, string _I4, string _I5, string _I6)
+            public Tab_5_1_1(string _Date_Time, string _PCM, string _I1, string _I2, string _I3, string _I4, string _I5, string _I6)
             {
                 Date_Time = _Date_Time;
                 PCM = _PCM;
@@ -531,16 +569,16 @@ namespace Models
             }
 
         }
-        public class Tab_5_1_1
+        public class Tab_5_1_2
         {
             public string Date_Time { get; set; }
             public string PCM { get; set; }
             public string U { get; set; }
 
-            public Tab_5_1_1()
+            public Tab_5_1_2()
             { }
 
-            public Tab_5_1_1(string _Date_Time, string _PCM, string _U)
+            public Tab_5_1_2(string _Date_Time, string _PCM, string _U)
             {
                 Date_Time = _Date_Time;
                 PCM = _PCM;
@@ -575,20 +613,24 @@ namespace Models
             }
 
         }
+
         public class Tab_5_3
         {
-            public string Date_Time { get; set; }
-            public string Distribution { get; set; }
-
+            public List<Tab_5_3_1> Tab_5_3_1 { get; set; }
+            public List<Tab_5_3_2> Tab_5_3_2 { get; set; }
             public Tab_5_3()
-            { }
-
-            public Tab_5_3(string _Date_Time, string _Distribution)
             {
-                Date_Time = _Date_Time;
-                Distribution = _Distribution;
+                Tab_5_3_1 = new();
+                Tab_5_3_2 = new();
+            }
+
+            public Tab_5_3(List<Tab_5_3_1> _t_5_3_1, List<Tab_5_3_2> _t_5_3_2)
+            {
+                Tab_5_3_1 = _t_5_3_1;
+                Tab_5_3_2 = _t_5_3_2;
             }
         }
+
         public class Tab_5_3_1
         {
             public string Date_Time { get; set; }
@@ -598,6 +640,20 @@ namespace Models
             { }
 
             public Tab_5_3_1(string _Date_Time, string _Distribution)
+            {
+                Date_Time = _Date_Time;
+                Distribution = _Distribution;
+            }
+        }
+        public class Tab_5_3_2
+        {
+            public string Date_Time { get; set; }
+            public string Distribution { get; set; }
+
+            public Tab_5_3_2()
+            { }
+
+            public Tab_5_3_2(string _Date_Time, string _Distribution)
             {
                 Date_Time = _Date_Time;
                 Distribution = _Distribution;

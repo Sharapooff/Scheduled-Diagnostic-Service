@@ -7,15 +7,33 @@ using Models;
 
 namespace Classes
 {
+    using Microsoft.EntityFrameworkCore;
+    using Nancy.Json;
     using System.Data.SqlClient;
     using System.IO;
     using System.Threading.Tasks;
+    using ScheduledDiagnosticService.Context;
+    using ScheduledDiagnosticService.Models.DataBase;
 
+    /// <summary>
+    /// Делегат для обработки события 
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="color"></param>
     public delegate void DiagnosticHandler(string message, Color color);
+
+    /// <summary>
+    /// Ксласс диагностирования
+    /// </summary>
     internal class Diagnostic
     {
-        //поля
-        public event DiagnosticHandler? Notify;              // 1.Определение события (уведомление)
+        /// <summary>
+        /// Определение события (уведомление)
+        /// </summary>
+        public event DiagnosticHandler? Notify;              
+        /// <summary>
+        /// Строка подключения
+        /// </summary>
         public string _connectionString { get; set; }
         public string Algoritm_id { get; set; }
         public string _section_id { get; set; }
@@ -26,8 +44,10 @@ namespace Classes
         public string Number { get; set; }
         public string Section { get; set; }
         public string Report_PDF_file_path { get; set; } //путь к файлу отчету PDF
-
-        //конструктор по умолчанию
+                
+        /// <summary>
+        /// Конструктор по умолчанию
+        /// </summary>
         public Diagnostic()
         { }
         //конструктор с параметрами 
@@ -61,18 +81,6 @@ namespace Classes
         public Report_Diagnostic_Models GetDiagnostic()
         {
             Report_Diagnostic_Models _reportModel = new Report_Diagnostic_Models();
-            //в объекте, который будет возвращаться как результат, нужно указать те же поля, что в классе Diagnostic
-            _reportModel.Algorithms_list = this.Algoritm_id;
-            _reportModel.Section_Name = this.Section;
-            _reportModel.Number = this.Number;
-            _reportModel.Seriya = this.Seriya;
-            _reportModel.StringData_start = this.dat_ot;
-            _reportModel.StringData_end = this.dat_do;
-            _reportModel.Tipe = this._tablica;
-            _reportModel.ERR = false;
-            _reportModel.ERR_message = "";
-                       
-
             /*
              * здесь вызываем все выбранные методы диагностирования
              * и заполняем модель отчета сразу или после окончания 
@@ -95,6 +103,17 @@ namespace Classes
                         this.Section = reader["Sec"].ToString();
                     }
                 }
+                //в объекте, который будет возвращаться как результат, нужно указать те же поля, что в классе Diagnostic
+                _reportModel.Algorithms_list = this.Algoritm_id;
+                _reportModel.Section_Name = this.Section;
+                _reportModel.Number = this.Number;
+                _reportModel.Seriya = this.Seriya;
+                _reportModel.StringData_start = this.dat_ot;
+                _reportModel.StringData_end = this.dat_do;
+                _reportModel.Tipe = this._tablica;
+                _reportModel.ERR = false;
+                _reportModel.ERR_message = "";
+
                 //создаем под каждый алгоритм свою задачу
                 Task<Diag_result<Tabels_Models.Tab_1_1>> task_1_1 = new Task<Diag_result<Tabels_Models.Tab_1_1>>(Algoritm_1_1);
                 Task<Diag_result<Tabels_Models.Tab_1_2>> task_1_2 = new Task<Diag_result<Tabels_Models.Tab_1_2>>(Algoritm_1_2);
@@ -110,14 +129,11 @@ namespace Classes
                 Task<Diag_result<Tabels_Models.Tab_2_2>> task_2_2 = new Task<Diag_result<Tabels_Models.Tab_2_2>>(Algoritm_2_2);
                 Task<Diag_result<Tabels_Models.Tab_2_3>> task_2_3 = new Task<Diag_result<Tabels_Models.Tab_2_3>>(Algoritm_2_3);
                 Task<Diag_result<Tabels_Models.Tab_3_1>> task_3_1 = new Task<Diag_result<Tabels_Models.Tab_3_1>>(Algoritm_3_1);
-                Task<Diag_result<Tabels_Models.Tab_3_1_1>> task_3_1_1 = new Task<Diag_result<Tabels_Models.Tab_3_1_1>>(Algoritm_3_1_1);
                 Task<Diag_result<Tabels_Models.Tab_4_1>> task_4_1 = new Task<Diag_result<Tabels_Models.Tab_4_1>>(Algoritm_4_1);
                 Task<Diag_result<Tabels_Models.Tab_4_2>> task_4_2 = new Task<Diag_result<Tabels_Models.Tab_4_2>>(Algoritm_4_2);
                 Task<Diag_result<Tabels_Models.Tab_5_1>> task_5_1 = new Task<Diag_result<Tabels_Models.Tab_5_1>>(Algoritm_5_1);
-                Task<Diag_result<Tabels_Models.Tab_5_1_1>> task_5_1_1 = new Task<Diag_result<Tabels_Models.Tab_5_1_1>>(Algoritm_5_1_1);
                 Task<Diag_result<Tabels_Models.Tab_5_2>> task_5_2 = new Task<Diag_result<Tabels_Models.Tab_5_2>>(Algoritm_5_2);
                 Task<Diag_result<Tabels_Models.Tab_5_3>> task_5_3 = new Task<Diag_result<Tabels_Models.Tab_5_3>>(Algoritm_5_3);
-                Task<Diag_result<Tabels_Models.Tab_5_3_1>> task_5_3_1 = new Task<Diag_result<Tabels_Models.Tab_5_3_1>>(Algoritm_5_3_1);
                 Task<Diag_result<Tabels_Models.Tab_6_1>> task_6_1 = new Task<Diag_result<Tabels_Models.Tab_6_1>>(Algoritm_6_1);
                 //.. и так далее
 
@@ -135,12 +151,12 @@ namespace Classes
                 if (Algoritm_id.IndexOf("*2-1*") > -1) { task_2_1.Start(); };
                 if (Algoritm_id.IndexOf("*2-2*") > -1) { task_2_2.Start(); };
                 if (Algoritm_id.IndexOf("*2-3*") > -1) { task_2_3.Start(); };
-                if (Algoritm_id.IndexOf("*3-1*") > -1) { task_3_1.Start(); task_3_1_1.Start(); };
+                if (Algoritm_id.IndexOf("*3-1*") > -1) { task_3_1.Start(); };
                 if (Algoritm_id.IndexOf("*4-1*") > -1) { task_4_1.Start(); };
                 if (Algoritm_id.IndexOf("*4-2*") > -1) { task_4_2.Start(); };
-                if (Algoritm_id.IndexOf("*5-1*") > -1) { task_5_1.Start(); task_5_1_1.Start(); };
+                if (Algoritm_id.IndexOf("*5-1*") > -1) { task_5_1.Start(); };
                 if (Algoritm_id.IndexOf("*5-2*") > -1) { task_5_2.Start(); };
-                if (Algoritm_id.IndexOf("*5-3*") > -1) { task_5_3.Start(); task_5_3_1.Start(); };
+                if (Algoritm_id.IndexOf("*5-3*") > -1) { task_5_3.Start(); };
                 if (Algoritm_id.IndexOf("*6-1*") > -1) { task_6_1.Start(); };
                 //.. и так далее
 
@@ -158,47 +174,48 @@ namespace Classes
                 if (Algoritm_id.IndexOf("*2-1*") > -1) { _reportModel.Table_2_1 = task_2_1.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*2-2*") > -1) { _reportModel.Table_2_2 = task_2_2.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*2-3*") > -1) { _reportModel.Table_2_3 = task_2_3.Result; } // ожидаем получение результата
-                if (Algoritm_id.IndexOf("*3-1*") > -1) { _reportModel.Table_3_1 = task_3_1.Result; _reportModel.Table_3_1_1 = task_3_1_1.Result; } // ожидаем получение результата
+                if (Algoritm_id.IndexOf("*3-1*") > -1) { _reportModel.Table_3_1 = task_3_1.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*4-1*") > -1) { _reportModel.Table_4_1 = task_4_1.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*4-2*") > -1) { _reportModel.Table_4_2 = task_4_2.Result; } // ожидаем получение результата
-                if (Algoritm_id.IndexOf("*5-1*") > -1) { _reportModel.Table_5_1 = task_5_1.Result; _reportModel.Table_5_1_1 = task_5_1_1.Result; } // ожидаем получение результата
+                if (Algoritm_id.IndexOf("*5-1*") > -1) { _reportModel.Table_5_1 = task_5_1.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*5-2*") > -1) { _reportModel.Table_5_2 = task_5_2.Result; } // ожидаем получение результата
-                if (Algoritm_id.IndexOf("*5-3*") > -1) { _reportModel.Table_5_3 = task_5_3.Result; _reportModel.Table_5_3_1 = task_5_3_1.Result; } // ожидаем получение результата
+                if (Algoritm_id.IndexOf("*5-3*") > -1) { _reportModel.Table_5_3 = task_5_3.Result; } // ожидаем получение результата
                 if (Algoritm_id.IndexOf("*6-1*") > -1) { _reportModel.Table_6_1 = task_6_1.Result; } // ожидаем получение результата
                 //.. и так далее
 
 
                 //если все команды отработали без ошибок в конце устанавливаем флаг отсутствия ошибки
                 _reportModel.ERR = false;
-                Notify?.Invoke(Seriya + Number + Section + " - алгоритмы отраболтали без ошибок", Color.Green);   // Вызов события 
+                Notify?.Invoke(Seriya + Number + Section + " - диагностирование выполнено", Color.Green);   // Вызов события
             }
             catch (Exception ex)
             {
                 //если при выполнении команд возникли шибоки, устанавливаем флаг ошибки
                 _reportModel.ERR = true;
                 _reportModel.ERR_message = ex.Message;
-                Notify?.Invoke(Seriya + Number + Section + " - ошибка алгоритма алгоритмы: " + ex.Message, Color.Red);   // Вызов события 
+                Notify?.Invoke("\r\n" + Seriya + Number + Section + " - в процессе диагностирования произошла ошибка: " + ex.Message, Color.Red);   // Вызов события
             }
             return (_reportModel);
         }
         //
-        // определение асинхронного метода
+        /// <summary>
+        /// Асинхронной версии метода GetDiagnostic()
+        /// </summary>
+        /// <returns>Task<Report_Diagnostic_Models></returns>
         async public Task<Report_Diagnostic_Models> GetDiagnosticAsync()
         {
             Report_Diagnostic_Models _reportModel = await Task.Run(() => GetDiagnostic());                // выполняется асинхронно
             return _reportModel;
-        }
-        async public Task<Result> SaveResultDiagnosticAsync(Report_Diagnostic_Models ResultDiagnostic)//, DBCotext dbCotext)
-        {
-            Result _result = new Result { ERR = false, ERR_Message = ""};
-
-            return (_result);
         }
         
         //События _________________________________________________________________________________________
 
 
         //Алгоритмы диагностирования _________________________________________________________________________________________
+        /// <summary>
+        /// Алгоритм 1-1
+        /// </summary>
+        /// <returns>Diag_result<Tabels_Models.Tab_1_1></returns>
         public Diag_result<Tabels_Models.Tab_1_1> Algoritm_1_1()
         {
             Diag_result<Tabels_Models.Tab_1_1> t_1_1 = new Diag_result<Tabels_Models.Tab_1_1>();
@@ -341,7 +358,7 @@ namespace Classes
                             zap.Cil[13] = reader3[pB5].ToString();//В5
                             zap.Cil[14] = reader3[pB6].ToString();//В6
                             zap.Cil[15] = reader3[pB7].ToString();//В7
-                            zap.Cil[16] = reader3[pB8].ToString();//В8                   
+                            zap.Cil[16] = reader3[pB8].ToString();//В8                  
                         }
                         SPISOK.Add(zap);
                         //date_copy = date;
@@ -721,6 +738,10 @@ namespace Classes
             return (t_1_1);
 
         }
+        /// <summary>
+        /// Алгоритм 1-2
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_2>/returns>
         public Diag_result<Tabels_Models.Tab_1_2> Algoritm_1_2()
         {
             Diag_result<Tabels_Models.Tab_1_2> t_1_2 = new Diag_result<Tabels_Models.Tab_1_2>();
@@ -871,6 +892,10 @@ namespace Classes
             }
             return (t_1_2);
         }
+        /// <summary>
+        /// Алгоритм 1-3
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_3>/returns>
         public Diag_result<Tabels_Models.Tab_1_3> Algoritm_1_3()
         {
             Diag_result<Tabels_Models.Tab_1_3> t_1_3 = new Diag_result<Tabels_Models.Tab_1_3>();
@@ -1020,6 +1045,10 @@ namespace Classes
             }
             return (t_1_3);
         }
+        /// <summary>
+        /// Алгоритм 1-4
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_4>/returns>
         public Diag_result<Tabels_Models.Tab_1_4> Algoritm_1_4()
         {
             Diag_result<Tabels_Models.Tab_1_4> t_1_4 = new Diag_result<Tabels_Models.Tab_1_4>();
@@ -1485,6 +1514,10 @@ namespace Classes
             }
             return (t_1_4);
         }
+        /// <summary>
+        /// Алгоритм 1-5
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_5/returns>
         public Diag_result<Tabels_Models.Tab_1_5> Algoritm_1_5()
         {
             Diag_result<Tabels_Models.Tab_1_5> t_1_5 = new Diag_result<Tabels_Models.Tab_1_5>();
@@ -1746,9 +1779,16 @@ namespace Classes
             }
             return (t_1_5);
         }
+        /// <summary>
+        /// Алгоритм 1-6
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_6>/returns>
         public Diag_result<Tabels_Models.Tab_1_6> Algoritm_1_6()
         {
             Diag_result<Tabels_Models.Tab_1_6> t_1_6 = new Diag_result<Tabels_Models.Tab_1_6>();
+            List<Tabels_Models.Tab_1_6_1> _tab_1_6_1 = new();
+            List<Tabels_Models.Tab_1_6_2> _tab_1_6_2 = new();
+
             try
             {
                 DateTime date_beg, date_end;
@@ -1771,7 +1811,6 @@ namespace Classes
                 double P_nadd = 1.45;
 
                 double k_nadd_rasch, k_razn_nadd;
-
 
                 dat_ot_new15 = dat_ot;
                 dat_do_new15 = dat_do;
@@ -1868,9 +1907,7 @@ namespace Classes
 
                 DateTime date;
                 int j = 1;
-
-                List<Tabels_Models.Tab_1_6_1> _tab_1_6_1 = new();
-
+                                
                 foreach (Zapis_Vozduh zapis in SPISOK)
                 {
                     vTabl_19.datatime = zapis.DAT;
@@ -1960,8 +1997,6 @@ namespace Classes
                     Connection.Close();
 
                 } //while (date_beg < date_end)
-
-                List<Tabels_Models.Tab_1_6_2> _tab_1_6_2 = new();
 
                 foreach (Zapis_Vozduh zapis in SPISOK)
                 {
@@ -2238,7 +2273,8 @@ namespace Classes
                     j++;
                     _tab_1_6_4.Add(new Tabels_Models.Tab_1_6_4(date.ToString("yyyy-MM-dd"), zapis.soob4));
                 }
-                
+
+                t_1_6.Table.Add(new Tabels_Models.Tab_1_6(_tab_1_6_1, _tab_1_6_2, _tab_1_6_3, _tab_1_6_4));
                 //в самом конце сброс флага наличия ошибки
                 t_1_6.ERR = false;
             }
@@ -2253,6 +2289,10 @@ namespace Classes
             }
             return (t_1_6);
         }
+        /// <summary>
+        /// Алгоритм 1-7
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_7>/returns>
         public Diag_result<Tabels_Models.Tab_1_7> Algoritm_1_7()
         {
             Diag_result<Tabels_Models.Tab_1_7> t_1_7 = new Diag_result<Tabels_Models.Tab_1_7>();
@@ -2276,7 +2316,10 @@ namespace Classes
             }
             return (t_1_7);
         }
-        //кислотная аккумуляторная батарея БС
+        /// <summary>
+        /// Алгоритм 1-8 кислотная аккумуляторная батарея БС
+        /// </summary>
+        /// <returns><Diag_result<Tabels_Models.Tab_1_8>/returns>        
         public Diag_result<Tabels_Models.Tab_1_8> Algoritm_1_8()
         {
             Diag_result<Tabels_Models.Tab_1_8> t_1_8 = new Diag_result<Tabels_Models.Tab_1_8>();
@@ -3287,6 +3330,8 @@ namespace Classes
         public Diag_result<Tabels_Models.Tab_3_1> Algoritm_3_1()
         {
             Diag_result<Tabels_Models.Tab_3_1> t_3_1 = new Diag_result<Tabels_Models.Tab_3_1>();
+            List<Tabels_Models.Tab_3_1_1> t_3_1_1 = new ();
+            List<Tabels_Models.Tab_3_1_2> t_3_1_2 = new ();
             try
             {
                 //выполнение алгоритма
@@ -3554,45 +3599,25 @@ namespace Classes
                     j++;
 
                     #region Данные для отчета (таблица 3_1)
-                    t_3_1.Table.Add(new Tabels_Models.Tab_3_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.PKM, zapis.PTG, zapis.delta_Tv_v_diz, zapis.delta_Tv_hol_kont, zapis.Tokr_sr, zapis.delta_Time_str));
+                    t_3_1_1.Add(new Tabels_Models.Tab_3_1_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.PKM, zapis.PTG, zapis.delta_Tv_v_diz, zapis.delta_Tv_hol_kont, zapis.Tokr_sr, zapis.delta_Time_str));
                     #endregion
                 }
                 //...............
-
-                //в самом конце сброс флага наличия ошибки
-                t_3_1.ERR = false;
-            }
-            catch (Exception ex)//если же возникла ошибка
-            {
-                t_3_1.ERR = true;
-                t_3_1.ERR_Message = ex.Message;
-            }
-            finally //в любом случае 
-            {
-                //можно например логировать событие    
-            }
-            return (t_3_1);
-        }
-        public Diag_result<Tabels_Models.Tab_3_1_1> Algoritm_3_1_1()
-        {
-            Diag_result<Tabels_Models.Tab_3_1_1> t_3_1_1 = new Diag_result<Tabels_Models.Tab_3_1_1>();
-            try
-            {
-                //выполнение алгоритма
+                //выполнение алгоритма 3_1_1
                 //...............
-                DateTime date_beg, date_end;
+                //DateTime date_beg, date_end;
 
-                string Tv_vih_diz_spr_zapis1 = "", Tv_hol_kont_spr_zapis1 = "", Tokr_sr_spr_zapis1 = "", vremia_zapis1 = "", data_zapis1 = "", pkm_zapis1 = "";
+                //string Tv_vih_diz_spr_zapis1 = "", Tv_hol_kont_spr_zapis1 = "", Tokr_sr_spr_zapis1 = "", vremia_zapis1 = "", data_zapis1 = "", pkm_zapis1 = "";
 
-                string Tv_vih_diz_spr1 = "0";
+                //string Tv_vih_diz_spr1 = "0";
 
-                string pPKM = "", Tv_vih_diz = "", Tv_hol_kont = "", Tokr_sr = "", PTG = "";
-                string MB1 = "", MB2 = "", MB3 = "", MB4 = "";
+                pPKM = ""; Tv_vih_diz = ""; Tv_hol_kont = ""; Tokr_sr = ""; PTG = "";
+                MB1 = ""; MB2 = ""; MB3 = ""; MB4 = "";
 
-                List<Zapis_Holod_ustr> SPISOK = new List<Zapis_Holod_ustr>();
-                List<Zapis_Holod_ustr> SPISOK1 = new List<Zapis_Holod_ustr>();
-                long i = 0;
-                Zapis_Holod_ustr zap_HUstr = new Zapis_Holod_ustr();
+                SPISOK = new List<Zapis_Holod_ustr>();
+                SPISOK1 = new List<Zapis_Holod_ustr>();
+                i = 0;
+                zap_HUstr = new Zapis_Holod_ustr();
 
                 switch (_tablica)
                 {
@@ -3609,20 +3634,20 @@ namespace Classes
                         break;
                 }
 
-                string year7, month7, day7;
-                string dat_ot_new7, dat_do_new7;
+                //string year7, month7, day7;
+                //string dat_ot_new7, dat_do_new7;
 
-                string YYYY, MM, DD, hh, mm, ss;
-                string YYYY1, MM1, DD1, hh1, mm1, ss1;
+                //string YYYY, MM, DD, hh, mm, ss;
+                //string YYYY1, MM1, DD1, hh1, mm1, ss1;
 
-                String minDate_dop, maxDate_dop;
-                String deltaDate, pkm_str;
-                String Tv_v_diz_str, Tv_hol_kont_str, Tokr_sr_str;
+                //String minDate_dop, maxDate_dop;
+                //String deltaDate, pkm_str;
+                //String Tv_v_diz_str, Tv_hol_kont_str, Tokr_sr_str;
 
-                DateTime minDate2, maxDate2;
+                //DateTime minDate2, maxDate2;
 
-                double deltaDate_mm, deltaDate_ss;
-                double delta_Tv_v_diz, delta_Tv_hol_kont, delta_Tokr_sr;
+                //double deltaDate_mm, deltaDate_ss;
+                //double delta_Tv_v_diz, delta_Tv_hol_kont, delta_Tokr_sr;
 
                 dat_ot_new7 = dat_ot;
                 dat_do_new7 = dat_do;
@@ -3636,7 +3661,7 @@ namespace Classes
                 minDate_dop = dat_ot_new7 + " 00:00:00"; //условно
                 maxDate_dop = dat_do_new7 + " 23:59:59"; //условно
 
-                int dannie = 0;     //проверка на наличие данных в основном/первом запросе
+                dannie = 0;     //проверка на наличие данных в основном/первом запросе
 
                 while (date_beg < date_end)
                 {
@@ -3796,9 +3821,9 @@ namespace Classes
                 List<Tabl_HolodUstr> Tabl_13 = new List<Tabl_HolodUstr>();//таблица
                 Tabl_HolodUstr huTabl_13 = new Tabl_HolodUstr();//запись таблицы
 
-                DateTime date;
+                //DateTime date;
 
-                int j = 0;
+                j = 0;
 
                 foreach (Zapis_Holod_ustr zapis in SPISOK1)
                 {
@@ -3827,25 +3852,29 @@ namespace Classes
                     j++;
 
                     #region Данные для отчета (таблица 3_1)
-                    t_3_1_1.Table.Add(new Tabels_Models.Tab_3_1_1(date.ToString("yyyy-MM-dd HH-mm-ss"), zapis.PKM, zapis.PTG, zapis.delta_Tv_v_diz, zapis.delta_Tv_hol_kont, zapis.Tokr_sr, zapis.delta_Time_str));
+                    t_3_1_2.Add(new Tabels_Models.Tab_3_1_2(date.ToString("yyyy-MM-dd HH-mm-ss"), zapis.PKM, zapis.PTG, zapis.delta_Tv_v_diz, zapis.delta_Tv_hol_kont, zapis.Tokr_sr, zapis.delta_Time_str));
                     #endregion
                 }
                 //...............
 
+
+
+                t_3_1.Table.Add(new Tabels_Models.Tab_3_1(t_3_1_1, t_3_1_2));
                 //в самом конце сброс флага наличия ошибки
-                t_3_1_1.ERR = false;
+                t_3_1.ERR = false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
-                t_3_1_1.ERR = true;
-                t_3_1_1.ERR_Message = ex.Message;
+                t_3_1.ERR = true;
+                t_3_1.ERR_Message = ex.Message;
             }
             finally //в любом случае 
             {
                 //можно например логировать событие    
             }
-            return (t_3_1_1);
+            return (t_3_1);
         }
+        
         public Diag_result<Tabels_Models.Tab_4_1> Algoritm_4_1()
         {
             Diag_result<Tabels_Models.Tab_4_1> t_4_1 = new Diag_result<Tabels_Models.Tab_4_1>();
@@ -4315,6 +4344,8 @@ namespace Classes
         public Diag_result<Tabels_Models.Tab_5_1> Algoritm_5_1()
         {
             Diag_result<Tabels_Models.Tab_5_1> t_5_1 = new Diag_result<Tabels_Models.Tab_5_1>();
+            List<Tabels_Models.Tab_5_1_1> t_5_1_1 = new();
+            List<Tabels_Models.Tab_5_1_2> t_5_1_2 = new();
             try
             {
                 //выполнение алгоритма
@@ -4582,44 +4613,16 @@ namespace Classes
                     j++;
 
                     #region Данные для отчета (таблица 5_1)
-                    t_5_1.Table.Add(new Tabels_Models.Tab_5_1(date.ToString("yyyy-MM-dd HH-mm-ss"), zapis.PKM, zapis.Ited1, zapis.Ited2, zapis.Ited3, zapis.Ited4, zapis.Ited5, zapis.Ited6));
+                    t_5_1_1.Add(new Tabels_Models.Tab_5_1_1(date.ToString("yyyy-MM-dd HH-mm-ss"), zapis.PKM, zapis.Ited1, zapis.Ited2, zapis.Ited3, zapis.Ited4, zapis.Ited5, zapis.Ited6));
                     #endregion
                 }
 
-                //заполнение результата. Заполнение построчно, каждую строку таблицы-результата               
-                t_5_1.ERR = false;
-                // t_5_1_1.ERR = false;
-            }
-            catch (Exception ex)//если же возникла ошибка
-            {
-                t_5_1.ERR = true;
-                t_5_1.ERR_Message = ex.Message;
+                //********************
 
-                // t_5_1_1.ERR = true;
-                // t_5_1_1.ERR_Message = ex.Message;
-            }
-            finally //в любом случае 
-            {
-                //можно например логировать событие    
-            }
-            return (t_5_1);
-            // return (t_5_1_1);
-        }
-        public Diag_result<Tabels_Models.Tab_5_1_1> Algoritm_5_1_1()
-        {
-            Diag_result<Tabels_Models.Tab_5_1_1> t_5_1_1 = new Diag_result<Tabels_Models.Tab_5_1_1>();
-            try
-            {
-                //выполнение алгоритма
-                //...............
-                DateTime date_beg, date_end;
-
-                string PKM_spr_zapis = "", data_zapis = "";
-                string PKM_zapis = "", U_spr_zapis = "";
-
-                string U_spr = "0";
-
-                string pPKM = "", UTG = "", ChVKV = "";
+                PKM_spr_zapis = ""; data_zapis = "";
+                PKM_zapis = ""; U_spr_zapis = "";
+                U_spr = "0";
+                pPKM = ""; UTG = ""; ChVKV = "";
 
                 switch (_tablica)
                 {
@@ -4634,19 +4637,15 @@ namespace Classes
                         break;
                 }
 
-                string year11, month11, day11;
-                string dat_ot_new10, dat_do_new10, dat_ot_new11, dat_do_new11;
-
                 dat_ot_new11 = dat_ot;
                 dat_do_new11 = dat_do;
 
                 date_beg = Convert.ToDateTime(dat_ot_new11 + " 00:00:00");
                 date_end = Convert.ToDateTime(dat_do_new11 + " 23:59:59");
 
-                // List<Zapis_Ited> SPISOK = new List<Zapis_Ited>();
-                List<Zapis_Ited> SPISOK1 = new List<Zapis_Ited>();
-                long i = 0;
-                Zapis_Ited zap_It = new Zapis_Ited();
+                SPISOK1 = new List<Zapis_Ited>();
+                i = 0;
+                zap_It = new Zapis_Ited();
 
                 dat_ot_new11 = dat_ot;
                 dat_do_new11 = dat_do;
@@ -4705,16 +4704,14 @@ namespace Classes
 
                 } //while (date_beg < date_end)
 
-                List<Tabl_It> Tabl_16 = new List<Tabl_It>();//таблица
-                Tabl_It ItTabl_16 = new Tabl_It();//запись таблицы
+                Tabl_16 = new List<Tabl_It>();//таблица
+                ItTabl_16 = new Tabl_It();//запись таблицы
                                                   //пустая начальная запись
-                Zapis_Ited last_zapis = new Zapis_Ited();
+                last_zapis = new Zapis_Ited();
 
                 last_zapis.DAT = "00.00.0000 00:00:00";
 
-                DateTime date;
-
-                int j = 1;
+                j = 1;
 
                 foreach (Zapis_Ited zapis in SPISOK1)
                 {
@@ -4735,24 +4732,27 @@ namespace Classes
                     j++;
 
                     #region Данные для отчета (таблица 5_1)
-                    t_5_1_1.Table.Add(new Tabels_Models.Tab_5_1_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.PKM, zapis.U));
+                    t_5_1_2.Add(new Tabels_Models.Tab_5_1_2(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.PKM, zapis.U));
                     #endregion
                 }
 
+                //********************
+                t_5_1.Table.Add(new Tabels_Models.Tab_5_1(t_5_1_1, t_5_1_2));
                 //заполнение результата. Заполнение построчно, каждую строку таблицы-результата               
-                t_5_1_1.ERR = false;
+                t_5_1.ERR = false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
-                t_5_1_1.ERR = true;
-                t_5_1_1.ERR_Message = ex.Message;
+                t_5_1.ERR = true;
+                t_5_1.ERR_Message = ex.Message;
             }
             finally //в любом случае 
             {
                 //можно например логировать событие    
             }
-            return (t_5_1_1);
-        }  //превышение напряжения Алгоритм 5-1 *добавила табл*
+            return (t_5_1);
+        }
+        
         public Diag_result<Tabels_Models.Tab_5_2> Algoritm_5_2()
         {
             Diag_result<Tabels_Models.Tab_5_2> t_5_2 = new Diag_result<Tabels_Models.Tab_5_2>();
@@ -4949,6 +4949,9 @@ namespace Classes
         public Diag_result<Tabels_Models.Tab_5_3> Algoritm_5_3()
         {
             Diag_result<Tabels_Models.Tab_5_3> t_5_3 = new Diag_result<Tabels_Models.Tab_5_3>();
+
+            List<Tabels_Models.Tab_5_3_1> t_5_3_1 = new();
+            List<Tabels_Models.Tab_5_3_2> t_5_3_2 = new();
             try
             {
                 //выполнение алгоритма
@@ -5151,34 +5154,14 @@ namespace Classes
                     j++;
 
                     #region Данные для отчета (таблица 5_3)
-                    t_5_3.Table.Add(new Tabels_Models.Tab_5_3(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.razbrosI1_8));
+                    t_5_3_1.Add(new Tabels_Models.Tab_5_3_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.razbrosI1_8));
                     #endregion
                 }
-                //в самом конце сброс флага наличия ошибки
-                t_5_3.ERR = false;
-            }
-            catch (Exception ex)//если же возникла ошибка
-            {
-                t_5_3.ERR = true;
-                t_5_3.ERR_Message = ex.Message;
-            }
-            finally //в любом случае 
-            {
-                //можно например логировать событие    
-            }
-            return (t_5_3);
-        }
-        public Diag_result<Tabels_Models.Tab_5_3_1> Algoritm_5_3_1()
-        {
-            Diag_result<Tabels_Models.Tab_5_3_1> t_5_3_1 = new Diag_result<Tabels_Models.Tab_5_3_1>();
-            try
-            {
+
                 //выполнение алгоритма
-                //...............
-                DateTime date_beg, date_end;
                 string Ited1_12_spr_zapis = "", Ited2_12_spr_zapis = "", Ited3_12_spr_zapis = "", Ited4_12_spr_zapis = "", Ited5_12_spr_zapis = "", Ited6_12_spr_zapis = "", data_zapis_12 = "";
                 string Ited1_12_spr = "0";
-                string pPKM = "", Ited1 = "", Ited2 = "", Ited3 = "", Ited4 = "", Ited5 = "", Ited6 = "", ChVKV = "", KSH1 = "", KSH2 = "";
+                pPKM = ""; Ited1 = ""; Ited2 = ""; Ited3 = ""; Ited4 = ""; Ited5 = ""; Ited6 = ""; ChVKV = ""; KSH1 = ""; KSH2 = "";
 
                 switch (_tablica)
                 {
@@ -5195,10 +5178,9 @@ namespace Classes
                         break;
                 }
 
-                double raspr1, raspr2, raspr3, raspr4, raspr5, raspr6;
-                List<Zapis_Raspred_I> SPISOK1 = new List<Zapis_Raspred_I>();
-                long i = 0;
-                Zapis_Raspred_I zap_RasprI = new Zapis_Raspred_I();
+                SPISOK1 = new List<Zapis_Raspred_I>();
+                i = 0;
+                zap_RasprI = new Zapis_Raspred_I();
 
                 string year14, month14, day14;
                 string dat_ot_new14, dat_do_new14;
@@ -5211,16 +5193,14 @@ namespace Classes
                 date_beg = Convert.ToDateTime(dat_ot_new14 + " 00:00:00");
                 date_end = Convert.ToDateTime(dat_do_new14 + " 23:59:59");
 
-                List<Tabl_rasprI> Tabl_18 = new List<Tabl_rasprI>();//таблица
-                Tabl_rasprI rITabl_18 = new Tabl_rasprI();//запись таблицы
+                Tabl_18 = new List<Tabl_rasprI>();//таблица
+                rITabl_18 = new Tabl_rasprI();//запись таблицы
                                                           //пустая начальная запись
-                Zapis_Raspred_I last_zapis = new Zapis_Raspred_I();
+                last_zapis = new Zapis_Raspred_I();
 
                 last_zapis.DAT = "00.00.0000 00:00:00";
 
-                DateTime date;
-
-                int j = 1;
+                j = 1;
 
                 while (date_beg < date_end)
                 {
@@ -5382,25 +5362,27 @@ namespace Classes
                     Tabl_18.Add(rITabl_18);
                     j++;
 
-                    #region Данные для отчета (таблица 5_3_1)
-                    t_5_3_1.Table.Add(new Tabels_Models.Tab_5_3_1(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.razbrosI1_12));
+                    #region Данные для отчета
+                    t_5_3_2.Add(new Tabels_Models.Tab_5_3_2(date.ToString("yyyy-MM-dd  HH-mm-ss"), zapis.razbrosI1_12));
                     #endregion
                 }
+
+                t_5_3.Table.Add(new Tabels_Models.Tab_5_3(t_5_3_1, t_5_3_2));
                 //в самом конце сброс флага наличия ошибки
-                t_5_3_1.ERR = false;
+                t_5_3.ERR = false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
-                t_5_3_1.ERR = true;
-                t_5_3_1.ERR_Message = ex.Message;
+                t_5_3.ERR = true;
+                t_5_3.ERR_Message = ex.Message;
             }
             finally //в любом случае 
             {
                 //можно например логировать событие    
             }
-            return (t_5_3_1);
-        }   //нарушение токораспределения Алгоритм 5-3 *добавила табл*
-
+            return (t_5_3);
+        }
+        
         //щелочная никель-кадмиевой аккумуляторная батарея
         public Diag_result<Tabels_Models.Tab_6_1> Algoritm_6_1()
         {

@@ -37,14 +37,11 @@ namespace Models
         public Diag_result<Tab_2_2> Table_2_2 = new Diag_result<Tab_2_2>();
         public Diag_result<Tab_2_3> Table_2_3 = new Diag_result<Tab_2_3>();
         public Diag_result<Tab_3_1> Table_3_1 = new Diag_result<Tab_3_1>();
-        public Diag_result<Tab_3_1_1> Table_3_1_1 = new Diag_result<Tab_3_1_1>();
         public Diag_result<Tab_4_1> Table_4_1 = new Diag_result<Tab_4_1>();
         public Diag_result<Tab_4_2> Table_4_2 = new Diag_result<Tab_4_2>();
         public Diag_result<Tab_5_1> Table_5_1 = new Diag_result<Tab_5_1>();
-        public Diag_result<Tab_5_1_1> Table_5_1_1 = new Diag_result<Tab_5_1_1>();
         public Diag_result<Tab_5_2> Table_5_2 = new Diag_result<Tab_5_2>();
         public Diag_result<Tab_5_3> Table_5_3 = new Diag_result<Tab_5_3>();
-        public Diag_result<Tab_5_3_1> Table_5_3_1 = new Diag_result<Tab_5_3_1>();
         public Diag_result<Tab_6_1> Table_6_1 = new Diag_result<Tab_6_1>();
 
         public List<Tabels_Models.GroupSmsModel> AlarmMessege = new List<Tabels_Models.GroupSmsModel>();

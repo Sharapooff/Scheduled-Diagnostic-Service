@@ -5,6 +5,7 @@ using Nancy.Json;
 using ScheduledDiagnosticService.Context;
 using ScheduledDiagnosticService.Models.DataBase;
 using Microsoft.Extensions.Configuration;
+using ScheduledDiagnosticService.Classes;
 
 namespace ScheduledDiagnosticService
 {
@@ -113,7 +114,7 @@ namespace ScheduledDiagnosticService
 
                     foreach (Section s in _sections)
                     {
-                        outToLog("\r\n" + s.Notation, Color.Black);
+                        //outToLog("\r\n" + s.Notation, Color.Black);
                         _s_algoritms = "";
                         foreach (TimeTable tt in s.TimeTables)
                         {
@@ -132,43 +133,22 @@ namespace ScheduledDiagnosticService
                             // 2) для каждой скекции из списка, считанных из БД, запустить диагностирование;
                             // 3) результаты необходимо записать в БД для последующего использования через вызов API;
 
-                            outToLog("Запуск алгоритмов диагностики по расписанию: " + DateTime.Now.ToString(), Color.Black);
-
+                            outToLog("Запуск алгоритмов диагностики по расписанию: " + s.Notation + " (" + DateTime.Now.ToString() + ")", Color.Black);
                             Diagnostic DIA = new Diagnostic(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString, _s_sectionId, _s_algoritms, DateTime.Now.AddMonths(-1).ToString("yyyy.MM.dd"), DateTime.Now.ToString("yyyy.MM.dd")); //объект класса диагностики   
                             DIA.Notify += outToLog;
-                            Report_Diagnostic_Models rezultDiagnostic = await DIA.GetDiagnosticAsync(); // rezultDiagnostic = await Task.Run(() => DIA.GetDiagnostic());
-                            Result _result = await DIA.SaveResultDiagnosticAsync(rezultDiagnostic);
-                            //выполнить диагностику и записать результат в переменную rezultDiagnostic
-                            //if (rezultDiagnostic.ERR == false) //если объект результата диагностики без ошибок
-                            //{
-                            //    //rezultDiagnostic.Report_PDF_file_path = DIA.Create_Report_PDF(rezultDiagnostic, Server.MapPath("/"));//создаем отчет возвращает имя файла при успешном создании или ERR  
-                            //    //DIA.ExcelReportCreate(rezultDiagnostic, Server.MapPath("/REPORTS/"));
-                            //}
-                            ////сериализуем, получаем из объекта-результата строку json
-                            //var serializer = new JavaScriptSerializer();//Создаем объект сериализации            
-                            //var serializedRezultDiagnostic = serializer.Serialize(rezultDiagnostic);//получаем строку json сериализуя некий объек            
-                            ////var deserializedResult = serializer.Deserialize<Report_Models.Report_Diagnostic_Models>(serializedRezultDiagnostic); //получаем объект, десериализуя строку json (наш параметр json_param)
-                            //////return Json(serializedRezultDiagnostic, JsonRequestBehavior.AllowGet);
-                            //outToLog(_number + "!!");
-
-                            //logRichTextBox.Invoke((Action)delegate { logRichTextBox.AppendText("\r\n" + "!!!"); });
-
-                            outToLog(DIA.Seriya + DIA.Number + DIA.Section + " Done: " + DateTime.Now.ToString(), Color.Green);
+                            Report_Diagnostic_Models rezultDiagnostic = await DIA.GetDiagnosticAsync(); // rezultDiagnostic = await Task.Run(() => DIA.GetDiagnostic());                            
+                            Result _result = await new SaveDiagnosticResult().SaveResultDiagnosticAsync(rezultDiagnostic, connectionString, Convert.ToInt32(_s_sectionId));
+                            //outToLog(DIA.Seriya + DIA.Number + DIA.Section + " Done: " + DateTime.Now.ToString(), Color.Green);
                         }
                         catch (System.Exception ex)
                         {
                             outToLog(ex.Message, Color.Red);
-
                         }
                         finally
                         {
-                            //button1.Text = "StopService";
+
                         }
                     }
-
-                    //UserProfile profile1 = new UserProfile { Age = 22, Name = "Tom", User = user1 };
-                    //UserProfile profile2 = new UserProfile { Age = 27, Name = "Alice", User = user2 };
-                    //db.UserProfiles.AddRange(profile1, profile2);
                 }
             }
             catch(Exception ex)

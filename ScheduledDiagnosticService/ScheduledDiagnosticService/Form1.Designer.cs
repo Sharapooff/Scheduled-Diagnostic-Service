@@ -75,7 +75,7 @@
             // 
             this.logRichTextBox.Location = new System.Drawing.Point(12, 184);
             this.logRichTextBox.Name = "logRichTextBox";
-            this.logRichTextBox.Size = new System.Drawing.Size(446, 96);
+            this.logRichTextBox.Size = new System.Drawing.Size(666, 170);
             this.logRichTextBox.TabIndex = 5;
             this.logRichTextBox.Text = "";
             // 
@@ -102,7 +102,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(470, 292);
+            this.ClientSize = new System.Drawing.Size(690, 366);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.logRichTextBox);

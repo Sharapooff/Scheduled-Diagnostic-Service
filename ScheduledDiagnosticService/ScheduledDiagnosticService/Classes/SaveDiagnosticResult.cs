@@ -25,7 +25,7 @@ namespace ScheduledDiagnosticService.Classes
                 foreach (Algoritm a in algoritms)
                 {
                     JavaScriptSerializer serializer = new();//Создаем объект сериализации
-                    ScheduledDiagnosticService.Models.DataBase.Incident incident = new(); //объект инцидента
+                    Incident incident = new(); //объект инцидента
                     incident.DiagDT = _DiagDT;
                     foreach (var s in from p in db.Sections where p.RefID == sectionId select p.Id)
                         incident.SectionId = s;

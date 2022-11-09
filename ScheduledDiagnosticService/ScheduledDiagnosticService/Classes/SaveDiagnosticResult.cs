@@ -33,78 +33,97 @@ namespace ScheduledDiagnosticService.Classes
                     {
                         case "*1-1*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_1.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_1);
                             break;
                         case "*1-2*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_2.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_2);
                             break;
                         case "*1-3*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_3.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_3);
                             break;
                         case "*1-4*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_4.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_4);
                             break;
                         case "*1-5*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_5.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_5);
                             break;
                         case "*1-6*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_6.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_6);
                             break;
                         case "*1-7*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_7.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_7);
                             break;
                         case "*1-8*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_1_8.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_1_8);
                             break;
                         case "*2-0*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.AlarmMessege.Count > 0 ? true : false;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.AlarmMessege);
                             break;
                         case "*2-1*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_2_1.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_2_1);
                             break;
                         case "*2-2*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_2_2.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_2_2);
                             break;
                         case "*2-3*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_2_3.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_2_3);
                             break;
                         case "*3-1*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_3_1.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_3_1);
                             break;
                         case "*4-1*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_4_1.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_4_1);
                             break;
                         case "*4-2*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_4_2.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_4_2);
                             break;
                         case "*5-1*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_5_1.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_5_1);
                             break;
                         case "*5-2*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_5_2.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_5_2);
                             break;
                         case "*5-3*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_5_3.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_5_3);
                             break;
                         case "*6-1*":
                             incident.AlgoritmId = a.Id;
+                            incident.PresenceFlag = ResultDiagnostic.Table_6_1.presenceFlag;
                             incident.DiagResult = serializer.Serialize(ResultDiagnostic.Table_6_1);
                             break;
                         default:

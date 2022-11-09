@@ -9,10 +9,13 @@ namespace Models
     public class Diag_result<T> //модель для данных результата диагностирования 
     {
         //информация о локомотиве
+
         public bool ERR { get; set; } //тип
-        public string ERR_Message { get; set; } //серия
-                                                //список объектов класса Т
-        public List<T> Table = new List<T>();
+        public string ERR_Message { get; set; }
+        public bool presenceFlag { get; set; }
+
+        public List<T> Table = new List<T>();//список объектов класса Т
+            
     }
 
     public class Result

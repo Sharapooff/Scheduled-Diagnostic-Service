@@ -152,7 +152,9 @@ namespace ScheduledDiagnosticService
             });
         }
 
-        private async void button2_Click(object sender, EventArgs e)
+       
+
+        private async void Form1_Shown(object sender, EventArgs e)
         {
             try
             {
@@ -210,7 +212,7 @@ namespace ScheduledDiagnosticService
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 outToLog(ex.Message, Color.Red);
             }

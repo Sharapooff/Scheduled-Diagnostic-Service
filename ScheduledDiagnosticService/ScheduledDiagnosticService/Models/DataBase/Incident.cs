@@ -32,7 +32,8 @@ namespace ScheduledDiagnosticService.Models.DataBase
         [Required]
         public string? DiagResult { get; set; }
         //-----------------------------------
-
+        public bool? PresenceFlag { get; set; }
+        //-----------------------------------
 
         [Required]
         public virtual Section? Section { get; set; } // навигационное свойство

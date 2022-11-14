@@ -725,6 +725,7 @@ namespace Classes
                 _coef.Clear();
                 //в самом конце сброс флага наличия ошибки
                 t_1_1.ERR = false;
+                t_1_1.presenceFlag = t_1_1.Table.Count > 0 ? true : false; 
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -880,6 +881,7 @@ namespace Classes
 
                 //в самом конце сброс флага наличия ошибки
                 t_1_2.ERR = false;
+                t_1_2.presenceFlag = t_1_2.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -1033,6 +1035,7 @@ namespace Classes
 
                 //в самом конце сброс флага наличия ошибки
                 t_1_3.ERR = false;
+                t_1_3.presenceFlag = t_1_3.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -1502,6 +1505,7 @@ namespace Classes
                 
                 //в самом конце сброс флага наличия ошибки
                 t_1_4.ERR = false;
+                t_1_4.presenceFlag = t_1_4.Table.Count > 0 ? true : false; 
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -1767,6 +1771,7 @@ namespace Classes
                 
                 //в самом конце сброс флага наличия ошибки
                 t_1_5.ERR = false;
+                t_1_5.presenceFlag = t_1_5.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -2277,6 +2282,7 @@ namespace Classes
                 t_1_6.Table.Add(new Tabels_Models.Tab_1_6(_tab_1_6_1, _tab_1_6_2, _tab_1_6_3, _tab_1_6_4));
                 //в самом конце сброс флага наличия ошибки
                 t_1_6.ERR = false;
+                t_1_6.presenceFlag = ((_tab_1_6_1.Count > 0) || (_tab_1_6_2.Count > 0) || (_tab_1_6_3.Count > 0) || (_tab_1_6_4.Count > 0)) ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -2304,6 +2310,7 @@ namespace Classes
 
                 //в самом конце сброс флага наличия ошибки
                 t_1_7.ERR = false;
+                t_1_7.presenceFlag = t_1_7.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -2492,6 +2499,7 @@ namespace Classes
                 }
                 //в самом конце сброс флага наличия ошибки
                 t_1_8.ERR = false;
+                t_1_8.presenceFlag = t_1_8.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -2594,6 +2602,7 @@ namespace Classes
                 t_2_1.Table.Add(new Tabels_Models.Tab_2_1());//!!! исправить с использованием конструктора с параметрами !!!
                 //в самом конце сброс флага наличия ошибки
                 t_2_1.ERR = false;
+                t_2_1.presenceFlag = t_2_1.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -2760,7 +2769,7 @@ namespace Classes
                 }
 
                 t_2_1.ERR = false;
-
+                t_2_1.presenceFlag = t_2_1.Table.Count > 0 ? true : false;
             }   //try
 
             catch (Exception ex)//если же возникла ошибка
@@ -3041,6 +3050,7 @@ namespace Classes
                 //...............
                 //в самом конце сброс флага наличия ошибки
                 t_2_2.ERR = false;
+                t_2_2.presenceFlag = t_2_2.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -3315,6 +3325,7 @@ namespace Classes
                 //...............
                 //в самом конце сброс флага наличия ошибки
                 t_2_3.ERR = false;
+                t_2_3.presenceFlag = t_2_3.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -3862,6 +3873,7 @@ namespace Classes
                 t_3_1.Table.Add(new Tabels_Models.Tab_3_1(t_3_1_1, t_3_1_2));
                 //в самом конце сброс флага наличия ошибки
                 t_3_1.ERR = false;
+                t_3_1.presenceFlag = ((t_3_1_1.Count > 0) || (t_3_1_2.Count > 0)) ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -4058,6 +4070,7 @@ namespace Classes
 
                 //в самом конце сброс флага наличия ошибки
                 t_4_1.ERR = false;
+                t_4_1.presenceFlag = t_4_1.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -4329,6 +4342,7 @@ namespace Classes
 
                 //в самом конце сброс флага наличия ошибки
                 t_4_2.ERR = false;
+                t_4_2.presenceFlag = t_4_2.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -4740,6 +4754,7 @@ namespace Classes
                 t_5_1.Table.Add(new Tabels_Models.Tab_5_1(t_5_1_1, t_5_1_2));
                 //заполнение результата. Заполнение построчно, каждую строку таблицы-результата               
                 t_5_1.ERR = false;
+                t_5_1.presenceFlag = ((t_5_1_1.Count > 0) || (t_5_1_2.Count > 0)) ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -4934,6 +4949,7 @@ namespace Classes
 
                 //в самом конце сброс флага наличия ошибки
                 t_5_2.ERR = false;
+                t_5_2.presenceFlag = t_5_2.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -5370,6 +5386,7 @@ namespace Classes
                 t_5_3.Table.Add(new Tabels_Models.Tab_5_3(t_5_3_1, t_5_3_2));
                 //в самом конце сброс флага наличия ошибки
                 t_5_3.ERR = false;
+                t_5_3.presenceFlag = ((t_5_3_1.Count > 0) || (t_5_3_2.Count > 0)) ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {
@@ -5583,6 +5600,7 @@ namespace Classes
                 }
                 //в самом конце сброс флага наличия ошибки
                 t_6_1.ERR = false;
+                t_6_1.presenceFlag = t_6_1.Table.Count > 0 ? true : false;
             }
             catch (Exception ex)//если же возникла ошибка
             {

@@ -44,7 +44,7 @@ namespace Models
         public Diag_result<Tab_5_3> Table_5_3 = new Diag_result<Tab_5_3>();
         public Diag_result<Tab_6_1> Table_6_1 = new Diag_result<Tab_6_1>();
 
-        public List<Tabels_Models.GroupSmsModel> AlarmMessege = new List<Tabels_Models.GroupSmsModel>();
+        public List<GroupSmsModel> AlarmMessege = new List<GroupSmsModel>();
 
     }
 }

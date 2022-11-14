@@ -35,11 +35,11 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.logRichTextBox = new System.Windows.Forms.RichTextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
+            this.button1.Enabled = false;
             this.button1.Location = new System.Drawing.Point(12, 14);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(89, 23);
@@ -56,6 +56,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
+            this.label1.Enabled = false;
             this.label1.Location = new System.Drawing.Point(132, 18);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(199, 15);
@@ -64,6 +65,7 @@
             // 
             // textBox1
             // 
+            this.textBox1.Enabled = false;
             this.textBox1.Location = new System.Drawing.Point(337, 15);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(87, 23);
@@ -73,8 +75,9 @@
             // 
             // logRichTextBox
             // 
-            this.logRichTextBox.Location = new System.Drawing.Point(12, 111);
+            this.logRichTextBox.Location = new System.Drawing.Point(12, 69);
             this.logRichTextBox.Name = "logRichTextBox";
+            this.logRichTextBox.ReadOnly = true;
             this.logRichTextBox.Size = new System.Drawing.Size(666, 156);
             this.logRichTextBox.TabIndex = 5;
             this.logRichTextBox.Text = "";
@@ -82,28 +85,17 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(18, 93);
+            this.label4.Location = new System.Drawing.Point(18, 51);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(83, 15);
             this.label4.TabIndex = 6;
             this.label4.Text = "Логирование:";
             // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(12, 61);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(179, 23);
-            this.button2.TabIndex = 7;
-            this.button2.Text = "run once service";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(690, 279);
-            this.Controls.Add(this.button2);
+            this.ClientSize = new System.Drawing.Size(690, 236);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.logRichTextBox);
             this.Controls.Add(this.textBox1);
@@ -111,6 +103,7 @@
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "ScheduledDiagnosticService";
+            this.Shown += new System.EventHandler(this.Form1_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -124,6 +117,5 @@
         private TextBox textBox1;
         private RichTextBox logRichTextBox;
         private Label label4;
-        private Button button2;
     }
 }

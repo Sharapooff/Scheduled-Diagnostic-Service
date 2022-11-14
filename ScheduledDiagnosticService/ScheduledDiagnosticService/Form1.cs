@@ -216,6 +216,10 @@ namespace ScheduledDiagnosticService
             {
                 outToLog(ex.Message, Color.Red);
             }
+            finally
+            { 
+                Application.Exit();
+            }
         }
     }
 }

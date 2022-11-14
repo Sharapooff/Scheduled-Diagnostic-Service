@@ -152,6 +152,11 @@ namespace ScheduledDiagnosticService
             });
         }
 
+        void logToTxt(string output, Color color)
+        {
+            //запись лог файла
+            System.IO.File.AppendAllText(@$"Log\LOG.ini", "\r\n" + output);
+        }
        
 
         private async void Form1_Shown(object sender, EventArgs e)
@@ -190,13 +195,11 @@ namespace ScheduledDiagnosticService
 
                         try
                         {
-                            // 1) по таймеру (раз в сутки) считать из БД список секций лдокомотивов и алгоритмов диагностирования для них;
-                            // 2) для каждой скекции из списка, считанных из БД, запустить диагностирование;
-                            // 3) результаты необходимо записать в БД для последующего использования через вызов API;
-
                             outToLog("Запуск алгоритмов диагностики по расписанию: " + s.Notation + " (" + DateTime.Now.ToString() + ")", Color.Black);
+                            logToTxt("Запуск алгоритмов диагностики по расписанию: " + s.Notation + " (" + DateTime.Now.ToString() + ")", Color.Black);
                             Diagnostic DIA = new Diagnostic(System.Configuration.ConfigurationManager.ConnectionStrings["lcmConnection"].ConnectionString, _s_sectionId, _s_algoritms, DateTime.Now.AddMonths(-1).ToString("yyyy.MM.dd"), DateTime.Now.ToString("yyyy.MM.dd")); //объект класса диагностики   
                             DIA.Notify += outToLog;
+                            DIA.Notify += logToTxt;
                             Report_Diagnostic_Models rezultDiagnostic = await DIA.GetDiagnosticAsync(); // rezultDiagnostic = await Task.Run(() => DIA.GetDiagnostic());                            
                             Result _result = await new SaveDiagnosticResult().SaveResultDiagnosticAsync(rezultDiagnostic, connectionString, Convert.ToInt32(_s_sectionId));
                             //outToLog(DIA.Seriya + DIA.Number + DIA.Section + " Done: " + DateTime.Now.ToString(), Color.Green);
@@ -204,6 +207,7 @@ namespace ScheduledDiagnosticService
                         catch (System.Exception ex)
                         {
                             outToLog(ex.Message, Color.Red);
+                            logToTxt(ex.Message, Color.Red);
                         }
                         finally
                         {
@@ -215,6 +219,7 @@ namespace ScheduledDiagnosticService
             catch (Exception ex)
             {
                 outToLog(ex.Message, Color.Red);
+                logToTxt(ex.Message, Color.Red);
             }
             finally
             { 

@@ -155,7 +155,7 @@ namespace ScheduledDiagnosticService
         void logToTxt(string output, Color color)
         {
             //запись лог файла
-            System.IO.File.AppendAllText(@$"Log\LOG.ini", "\r\n" + output);
+            System.IO.File.AppendAllText(@$"D:\Sharapooff\LogDiagServices\LOG.ini", "\r\n" + output);
         }
        
 
@@ -163,6 +163,8 @@ namespace ScheduledDiagnosticService
         {
             try
             {
+                if (File.Exists(@$"D:\Sharapooff\LogDiagServices\LOG.ini")) { File.Delete(@$"D:\Sharapooff\LogDiagServices\LOG.ini"); }
+
                 var builder = new ConfigurationBuilder();
                 // установка пути к текущему каталогу
                 builder.SetBasePath(Directory.GetCurrentDirectory());
